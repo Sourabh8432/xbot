@@ -113,6 +113,21 @@ export function AppProvider({ children }) {
     fetchBotStatus();
   }, [fetchAccount, fetchTweets, fetchBotStatus, showToast]);
 
+  // Direct 1-Click Twitter OAuth Connect
+  const connectWithTwitter = async () => {
+    try {
+      showToast('Opening Twitter login...', 'info');
+      const res = await api.getAuthUrl();
+      if (res.success && res.url) {
+        window.location.href = res.url;
+      }
+    } catch (err) {
+      // If client ID is missing on the server, open configuration popup so owner can set it
+      setIsConnectModalOpen(true);
+      showToast('Twitter Client ID not set yet. Enter it once to enable 1-click connect.', 'error');
+    }
+  };
+
   return (
     <AppContext.Provider
       value={{
@@ -132,7 +147,8 @@ export function AppProvider({ children }) {
         fetchAccount,
         fetchTweets,
         handleDisconnect,
-        toggleBot
+        toggleBot,
+        connectWithTwitter
       }}
     >
       {children}

@@ -32,7 +32,10 @@ export function AccountModal() {
   const handleOAuthConnect = async () => {
     try {
       setLoading(true);
-      const res = await api.getAuthUrl(oauthClientId || undefined);
+      if (oauthClientId && oauthClientId.trim()) {
+        await api.saveCredentials({ clientId: oauthClientId.trim() });
+      }
+      const res = await api.getAuthUrl(oauthClientId ? oauthClientId.trim() : undefined);
       if (res.success && res.url) {
         window.location.href = res.url;
       }
@@ -79,9 +82,9 @@ export function AccountModal() {
               <Twitter className="w-4 h-4 fill-current" />
             </div>
             <div>
-              <h2 className="text-base font-bold text-white">Connect Your X (Twitter) Account</h2>
+              <h2 className="text-base font-bold text-white">Connect with X (Twitter)</h2>
               <p className="text-xs text-slate-400">
-                Link any X account via OAuth 2.0 PKCE or Direct API Access Token
+                1-Click official authentication or direct developer token
               </p>
             </div>
           </div>
@@ -96,8 +99,8 @@ export function AccountModal() {
         {/* Tab Selection */}
         <div className="flex border-b border-white/10 px-5 pt-3 gap-2">
           {[
-            { id: 'oauth', label: 'OAuth 2.0 PKCE (Official)', icon: Twitter },
-            { id: 'direct', label: 'Direct User Access Token', icon: KeyRound }
+            { id: 'oauth', label: '1-Click Official Login', icon: Twitter },
+            { id: 'direct', label: 'Direct Developer Token', icon: KeyRound }
           ].map((tab) => {
             const Icon = tab.icon;
             return (
@@ -122,41 +125,44 @@ export function AccountModal() {
           {/* TAB 1: OAuth 2.0 */}
           {activeTab === 'oauth' && (
             <div className="space-y-4">
-              <div className="p-4 rounded-2xl bg-sky-500/10 border border-sky-500/20 text-xs text-slate-300 space-y-2">
-                <div className="font-bold text-sky-400 flex items-center gap-1.5">
+              <div className="p-4 rounded-2xl bg-sky-500/10 border border-sky-500/20 text-xs text-slate-300 space-y-1.5">
+                <div className="font-bold text-sky-400 flex items-center gap-1.5 text-xs">
                   <ShieldCheck className="w-4 h-4" />
-                  Official OAuth 2.0 PKCE Flow
+                  Official Twitter Login Screen
                 </div>
-                <p>
-                  Connect securely via Twitter's official consent screen. Requires your Twitter Developer App Client ID.
+                <p className="leading-relaxed text-slate-300">
+                  Button click karte hi Twitter ka official authorization page khulega. "Authorize app" dabane par aapka account turant connect ho jayega.
                 </p>
-              </div>
-
-              <div>
-                <label className="block text-xs font-semibold text-slate-300 mb-1">
-                  OAuth 2.0 Client ID (Optional if set in Settings / .env)
-                </label>
-                <input
-                  type="text"
-                  value={oauthClientId}
-                  onChange={(e) => setOauthClientId(e.target.value)}
-                  placeholder="Paste Twitter Developer Client ID..."
-                  className="w-full bg-white/5 border border-white/10 rounded-xl px-3.5 py-2.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-sky-500/60 font-mono"
-                />
-                <span className="text-[11px] text-slate-500 block mt-1">
-                  Callback URL in Twitter Developer Portal must be: <code className="text-sky-400 font-mono">{typeof window !== 'undefined' ? `${window.location.origin}/api/twitter/auth/callback` : 'http://localhost:3001/api/twitter/auth/callback'}</code>
-                </span>
               </div>
 
               <button
                 onClick={handleOAuthConnect}
                 disabled={loading}
-                className="w-full py-3 rounded-xl bg-gradient-to-r from-sky-500 to-blue-600 hover:from-sky-400 hover:to-blue-500 text-white font-bold text-xs shadow-lg shadow-sky-500/20 flex items-center justify-center gap-2 transition"
+                className="w-full py-3.5 rounded-2xl bg-gradient-to-r from-sky-500 via-blue-600 to-indigo-600 hover:from-sky-400 hover:to-blue-500 text-white font-extrabold text-sm shadow-xl shadow-sky-500/25 flex items-center justify-center gap-2.5 transition active:scale-98"
               >
                 <Twitter className="w-4 h-4 fill-current" />
-                <span>{loading ? 'Redirecting to X...' : 'Authorize with X (Twitter)'}</span>
-                <ArrowRight className="w-3.5 h-3.5" />
+                <span>{loading ? 'Opening Twitter...' : 'Continue to Twitter (Official Login)'}</span>
+                <ArrowRight className="w-4 h-4" />
               </button>
+
+              {/* One-time Client ID configuration helper */}
+              <div className="pt-3 border-t border-white/10 space-y-2">
+                <div className="text-[11px] font-semibold text-slate-400">
+                  App Owner Setup (Agar Vercel env me TWITTER_CLIENT_ID nahi daala hai):
+                </div>
+                <div>
+                  <input
+                    type="text"
+                    value={oauthClientId}
+                    onChange={(e) => setOauthClientId(e.target.value)}
+                    placeholder="Paste Twitter Client ID here once..."
+                    className="w-full bg-white/5 border border-white/10 rounded-xl px-3.5 py-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-sky-500/60 font-mono"
+                  />
+                  <span className="text-[10px] text-slate-500 block mt-1">
+                    Callback URL in Twitter Developer Portal: <code className="text-sky-400 font-mono">{typeof window !== 'undefined' ? `${window.location.origin}/api/twitter/auth/callback` : 'https://xbot-nine.vercel.app/api/twitter/auth/callback'}</code>
+                  </span>
+                </div>
+              </div>
             </div>
           )}
 

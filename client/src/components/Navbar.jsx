@@ -18,7 +18,8 @@ export function Navbar() {
     handleDisconnect,
     setIsConnectModalOpen,
     botStatus,
-    toggleBot
+    toggleBot,
+    connectWithTwitter
   } = useApp();
 
   const [accountDropdownOpen, setAccountDropdownOpen] = useState(false);
@@ -134,11 +135,11 @@ export function Navbar() {
           </div>
         ) : (
           <button
-            onClick={() => setIsConnectModalOpen(true)}
+            onClick={connectWithTwitter}
             className="flex items-center gap-2 px-3.5 py-1.5 rounded-lg bg-gradient-to-r from-sky-500 to-blue-600 hover:from-sky-400 hover:to-blue-500 text-white font-semibold text-xs shadow-lg shadow-sky-500/20 transition-all active:scale-95"
           >
             <Twitter className="w-3.5 h-3.5 fill-current" />
-            <span>Connect X Account</span>
+            <span>Connect with X</span>
           </button>
         )}
       </div>

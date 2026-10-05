@@ -26,7 +26,7 @@ import {
 } from 'lucide-react';
 
 export function DashboardContent() {
-  const { activeTab, account, loadingAccount, toast, setActiveTab, setIsConnectModalOpen } = useApp();
+  const { activeTab, account, loadingAccount, toast, setActiveTab, setIsConnectModalOpen, connectWithTwitter } = useApp();
 
   if (loadingAccount && !account) {
     return (
@@ -145,11 +145,11 @@ export function DashboardContent() {
 
                   <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-2">
                     <button
-                      onClick={() => setIsConnectModalOpen(true)}
+                      onClick={connectWithTwitter}
                       className="w-full sm:w-auto flex items-center justify-center gap-2 px-6 py-3 rounded-xl bg-gradient-to-r from-sky-500 to-blue-600 hover:from-sky-400 hover:to-blue-500 text-white font-bold text-xs shadow-lg shadow-sky-500/20 transition-all active:scale-95"
                     >
                       <Twitter className="w-4 h-4 fill-current" />
-                      <span>Connect X Account Now</span>
+                      <span>Sign in & Connect with X</span>
                       <ArrowRight className="w-4 h-4" />
                     </button>
 
