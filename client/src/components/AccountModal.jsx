@@ -158,53 +158,43 @@ export function AccountModal() {
               <div className="p-4 rounded-2xl bg-sky-500/10 border border-sky-500/20 text-xs text-slate-300 space-y-1.5">
                 <div className="font-bold text-sky-400 flex items-center gap-1.5 text-xs">
                   <ShieldCheck className="w-4 h-4" />
-                  Official Twitter Login Screen
+                  Official Twitter Login via OAuth 2.0 PKCE
                 </div>
-                <p className="leading-relaxed text-slate-300">
-                  Button click karte hi Twitter ka official authorization screen khulega. "Authorize app" dabane par aapka live account dashboard me connect ho jayega.
+                <p className="leading-relaxed text-slate-300 text-[11px]">
+                  Apna Twitter Client ID aur Client Secret enter karein, fir "Continue to Twitter" click karke live account connect karein.
                 </p>
               </div>
 
-              <button
-                onClick={handleOAuthConnect}
-                disabled={loading}
-                className="w-full py-3.5 rounded-2xl bg-gradient-to-r from-sky-500 via-blue-600 to-indigo-600 hover:from-sky-400 hover:to-blue-500 text-white font-extrabold text-sm shadow-xl shadow-sky-500/25 flex items-center justify-center gap-2.5 transition active:scale-98"
-              >
-                <Twitter className="w-4 h-4 fill-current" />
-                <span>{loading ? 'Opening Twitter...' : 'Continue to Twitter (Official Login)'}</span>
-                <ArrowRight className="w-4 h-4" />
-              </button>
-
-              {/* Developer App Credentials Helper */}
-              <div className="pt-3 border-t border-white/10 space-y-3">
+              {/* Developer App Credentials Inputs FIRST */}
+              <div className="p-4 rounded-2xl bg-white/5 border border-white/10 space-y-3">
                 <div className="flex items-center justify-between">
-                  <span className="text-[11px] font-semibold text-slate-300 flex items-center gap-1.5">
+                  <span className="text-xs font-bold text-white flex items-center gap-1.5">
                     <KeyRound className="w-3.5 h-3.5 text-sky-400" />
                     Twitter Developer App Credentials
                   </span>
-                  <span className="text-[10px] text-slate-500">Auto-saved to browser</span>
+                  <span className="text-[10px] text-emerald-400 font-medium">Auto-saved</span>
                 </div>
 
-                <div className="space-y-2.5">
+                <div className="space-y-3">
                   <div>
-                    <label className="block text-[11px] font-medium text-slate-400 mb-1">
-                      OAuth 2.0 Client ID <span className="text-red-400">*</span>
+                    <label className="block text-[11px] font-semibold text-slate-300 mb-1">
+                      1. OAuth 2.0 Client ID <span className="text-red-400">*</span>
                     </label>
                     <input
                       type="text"
                       value={oauthClientId}
                       onChange={(e) => setOauthClientId(e.target.value)}
                       placeholder="Paste Twitter Client ID here..."
-                      className="w-full bg-white/5 border border-white/10 rounded-xl px-3.5 py-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-sky-500/60 font-mono"
+                      className="w-full bg-black/40 border border-white/10 rounded-xl px-3.5 py-2.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-sky-500/60 font-mono"
                     />
                   </div>
 
                   <div>
                     <div className="flex items-center justify-between mb-1">
-                      <label className="text-[11px] font-medium text-slate-400">
-                        OAuth 2.0 Client Secret
+                      <label className="text-[11px] font-semibold text-slate-300">
+                        2. OAuth 2.0 Client Secret
                       </label>
-                      <span className="text-[10px] text-amber-400 font-medium">
+                      <span className="text-[10px] text-amber-400 font-semibold">
                         (Zaroori hai agar app "Web App" hai)
                       </span>
                     </div>
@@ -214,7 +204,7 @@ export function AccountModal() {
                         value={oauthClientSecret}
                         onChange={(e) => setOauthClientSecret(e.target.value)}
                         placeholder="Paste Twitter Client Secret here..."
-                        className="w-full bg-white/5 border border-white/10 rounded-xl px-3.5 py-2 pr-10 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-sky-500/60 font-mono"
+                        className="w-full bg-black/40 border border-amber-500/30 rounded-xl px-3.5 py-2.5 pr-10 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-amber-400 font-mono"
                       />
                       <button
                         type="button"
@@ -225,17 +215,11 @@ export function AccountModal() {
                         {showSecret ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
                       </button>
                     </div>
-                    <div className="flex items-start gap-1.5 mt-1.5 text-[10px] text-slate-400">
-                      <Info className="w-3 h-3 text-sky-400 shrink-0 mt-0.5" />
-                      <span>
-                        Twitter Developer Portal me "Web App" hone par Twitter Client Secret zaroor deta hai. Ise yaha daalne se <strong>Missing authorization header</strong> error theek ho jata hai.
-                      </span>
-                    </div>
                   </div>
 
-                  <div className="p-2.5 rounded-xl bg-white/5 border border-white/5 flex items-center justify-between gap-2 mt-2">
+                  <div className="p-2.5 rounded-xl bg-black/30 border border-white/5 flex items-center justify-between gap-2">
                     <div className="min-w-0">
-                      <div className="text-[10px] text-slate-400 font-medium">Callback URL for Twitter Portal:</div>
+                      <div className="text-[10px] text-slate-400 font-medium">Callback URL in Twitter Developer Portal:</div>
                       <div className="text-[11px] text-sky-400 font-mono truncate">{callbackUrl}</div>
                     </div>
                     <button
@@ -256,6 +240,33 @@ export function AccountModal() {
                       )}
                     </button>
                   </div>
+                </div>
+              </div>
+
+              {/* Action Button AFTER Credentials */}
+              <button
+                onClick={handleOAuthConnect}
+                disabled={loading || !oauthClientId.trim()}
+                className="w-full py-3.5 rounded-2xl bg-gradient-to-r from-sky-500 via-blue-600 to-indigo-600 hover:from-sky-400 hover:to-blue-500 disabled:opacity-50 text-white font-extrabold text-sm shadow-xl shadow-sky-500/25 flex items-center justify-center gap-2.5 transition active:scale-98"
+              >
+                <Twitter className="w-4 h-4 fill-current" />
+                <span>{loading ? 'Opening Twitter...' : 'Continue to Twitter (Official Login)'}</span>
+                <ArrowRight className="w-4 h-4" />
+              </button>
+
+              {/* Helpful Tips Section */}
+              <div className="p-3.5 rounded-xl bg-slate-900/60 border border-white/10 text-[11px] text-slate-300 space-y-2">
+                <div className="font-bold text-amber-300 flex items-center gap-1.5">
+                  <Info className="w-3.5 h-3.5" />
+                  Client Secret kahan se milega ya agar nahi hai toh?
+                </div>
+                <div className="space-y-1 text-slate-400 text-[10px] leading-relaxed">
+                  <p>
+                    • <strong>Option 1 (Secret mil gaya):</strong> Twitter Developer Portal me "Keys and tokens" tab me jaakar Client Secret copy karein (agar pehle copy nahi kiya tha toh <strong>"Regenerate"</strong> dabayein).
+                  </p>
+                  <p>
+                    • <strong>Option 2 (Sabse aasan - No Secret Needed):</strong> Twitter Developer Portal me User authentication settings me <strong>Type of App</strong> ko <strong>"Native App"</strong> select karke save karein. Native App me Client Secret ki zaroorat hi nahi hoti!
+                  </p>
                 </div>
               </div>
             </div>

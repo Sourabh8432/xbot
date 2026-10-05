@@ -104,7 +104,9 @@ export function AppProvider({ children }) {
       showToast('🎉 X Account successfully connected via OAuth 2.0!', 'success');
       window.history.replaceState({}, document.title, window.location.pathname);
     } else if (params.get('auth_error')) {
-      showToast(`OAuth Error: ${params.get('auth_error')}`, 'error');
+      const err = params.get('auth_error');
+      showToast(`OAuth Error: ${err}`, 'error');
+      setIsConnectModalOpen(true);
       window.history.replaceState({}, document.title, window.location.pathname);
     }
 
@@ -115,14 +117,21 @@ export function AppProvider({ children }) {
 
   // Direct 1-Click Twitter OAuth Connect
   const connectWithTwitter = async () => {
+    const savedClientId = typeof localStorage !== 'undefined' ? localStorage.getItem('xbot_client_id') : null;
+    const savedClientSecret = typeof localStorage !== 'undefined' ? localStorage.getItem('xbot_client_secret') : null;
+
+    // If credentials are not saved in this browser yet, open modal so user can configure them
+    if (!savedClientId) {
+      setIsConnectModalOpen(true);
+      return;
+    }
+
     try {
       showToast('Opening Twitter login...', 'info');
-      const savedClientId = typeof localStorage !== 'undefined' ? localStorage.getItem('xbot_client_id') : null;
-      const savedClientSecret = typeof localStorage !== 'undefined' ? localStorage.getItem('xbot_client_secret') : null;
       const callbackUrl = typeof window !== 'undefined' ? `${window.location.origin}/api/twitter/auth/callback` : undefined;
 
       const res = await api.getAuthUrl(
-        savedClientId || undefined,
+        savedClientId,
         callbackUrl,
         savedClientSecret || undefined
       );
@@ -130,9 +139,8 @@ export function AppProvider({ children }) {
         window.location.href = res.url;
       }
     } catch (err) {
-      // If client ID is missing on the server, open configuration popup so owner can set it
       setIsConnectModalOpen(true);
-      showToast(err.message || 'Twitter Client ID not set yet. Enter it once to enable 1-click connect.', 'error');
+      showToast(err.message || 'Twitter login initialization failed.', 'error');
     }
   };
 
