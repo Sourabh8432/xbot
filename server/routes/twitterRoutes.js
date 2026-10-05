@@ -139,6 +139,13 @@ router.get('/tweets', async (req, res) => {
         });
       } catch (err) {
         console.error('Error fetching live tweets:', err.response?.data || err.message);
+        const errDetail = err.response?.data?.detail || err.response?.data?.title || err.message;
+        return res.json({
+          success: true,
+          isLive: true,
+          tweets: [],
+          notice: errDetail
+        });
       }
     }
 
@@ -385,7 +392,26 @@ router.post('/tweet', async (req, res) => {
   try {
     const result = await postLiveTweet(session.accessToken, text);
     addBotLog('SUCCESS', 'Tweet Published to X', `Tweet ID: ${result.data?.id}`);
-    return res.json({ success: true, isLive: true, result });
+    const newTweet = {
+      id: result.data?.id || `tw_${Date.now()}`,
+      text: result.data?.text || text,
+      created_at: new Date().toISOString(),
+      source: 'XBot SaaS Studio',
+      public_metrics: {
+        impression_count: 1,
+        like_count: 0,
+        reply_count: 0,
+        retweet_count: 0,
+        bookmark_count: 0
+      }
+    };
+    return res.json({
+      success: true,
+      isLive: true,
+      message: 'Tweet published successfully to X!',
+      tweet: newTweet,
+      result
+    });
   } catch (err) {
     console.error('Error posting tweet:', err.response?.data || err.message);
     const msg = err.response?.data?.detail || err.message;

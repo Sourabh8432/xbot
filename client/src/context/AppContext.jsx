@@ -11,6 +11,7 @@ export function AppProvider({ children }) {
   const [loadingAccount, setLoadingAccount] = useState(true);
 
   const [tweets, setTweets] = useState([]);
+  const [tweetsNotice, setTweetsNotice] = useState(null);
   const [loadingTweets, setLoadingTweets] = useState(false);
 
   const [isConnectModalOpen, setIsConnectModalOpen] = useState(false);
@@ -42,12 +43,39 @@ export function AppProvider({ children }) {
   }, [showToast]);
 
   // Fetch tweets
+  // Helper to add locally published tweet
+  const addPublishedTweet = useCallback((newTweet) => {
+    setTweets(prev => [newTweet, ...prev.filter(t => t.id !== newTweet.id)]);
+    if (typeof localStorage !== 'undefined') {
+      try {
+        const existing = JSON.parse(localStorage.getItem('xbot_published_tweets') || '[]');
+        const updated = [newTweet, ...existing.filter(t => t.id !== newTweet.id)].slice(0, 50);
+        localStorage.setItem('xbot_published_tweets', JSON.stringify(updated));
+      } catch (e) {}
+    }
+  }, []);
+
+  // Fetch tweets
   const fetchTweets = useCallback(async () => {
     try {
       setLoadingTweets(true);
       const data = await api.getTweets();
       if (data.success) {
-        setTweets(data.tweets || []);
+        let localTweets = [];
+        if (typeof localStorage !== 'undefined') {
+          try {
+            localTweets = JSON.parse(localStorage.getItem('xbot_published_tweets') || '[]');
+          } catch (e) {}
+        }
+        const apiTweets = data.tweets || [];
+        const merged = [...localTweets];
+        for (const t of apiTweets) {
+          if (!merged.some(m => m.id === t.id)) {
+            merged.push(t);
+          }
+        }
+        setTweets(merged);
+        setTweetsNotice(data.notice || null);
       }
     } catch (err) {
       console.error('Failed to fetch tweets:', err);
@@ -154,6 +182,9 @@ export function AppProvider({ children }) {
         rateLimit,
         loadingAccount,
         tweets,
+        tweetsNotice,
+        setTweets,
+        addPublishedTweet,
         loadingTweets,
         isConnectModalOpen,
         setIsConnectModalOpen,

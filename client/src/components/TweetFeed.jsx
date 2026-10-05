@@ -20,7 +20,7 @@ import {
 } from 'lucide-react';
 
 export function TweetFeed() {
-  const { account, tweets, loadingTweets, fetchTweets, showToast } = useApp();
+  const { account, tweets, tweetsNotice, addPublishedTweet, loadingTweets, fetchTweets, showToast } = useApp();
   const [filter, setFilter] = useState('all'); // all, media, high_reach, pinned
   const [searchQuery, setSearchQuery] = useState('');
   const [newTweetText, setNewTweetText] = useState('');
@@ -35,7 +35,10 @@ export function TweetFeed() {
     try {
       setIsPublishing(true);
       const res = await api.postTweet(newTweetText.trim());
-      showToast(res.message || 'Tweet published successfully!', 'success');
+      if (res.tweet) {
+        addPublishedTweet(res.tweet);
+      }
+      showToast(res.message || '🎉 Tweet published live to X!', 'success');
       setNewTweetText('');
       await fetchTweets();
     } catch (err) {
@@ -189,12 +192,30 @@ export function TweetFeed() {
       {/* Tweet Items List */}
       <div className="space-y-3">
         {filteredTweets.length === 0 ? (
-          <div className="p-12 text-center rounded-2xl glass-card border border-white/10 space-y-2">
-            <MessageSquare className="w-10 h-10 text-slate-600 mx-auto" />
-            <div className="text-sm font-semibold text-slate-300">No tweets found for this filter</div>
-            <p className="text-xs text-slate-500">
-              Try switching filters or publish a new post using the composer above.
-            </p>
+          <div className="p-8 sm:p-12 text-center rounded-2xl glass-card border border-white/10 space-y-3">
+            <div className="w-12 h-12 rounded-2xl bg-sky-500/10 border border-sky-500/20 text-sky-400 flex items-center justify-center mx-auto">
+              <MessageSquare className="w-6 h-6" />
+            </div>
+            
+            <div className="space-y-1">
+              <h3 className="text-base font-bold text-white">
+                {account?.public_metrics?.tweet_count === 0
+                  ? `No posts yet on @${account?.username || 'your account'}`
+                  : "No posts found for this view"}
+              </h3>
+              <p className="text-xs text-slate-400 max-w-md mx-auto leading-relaxed">
+                {account?.public_metrics?.tweet_count === 0
+                  ? `Aapke account par abhi 0 posts hain. Upar diye gaye composer me likhkar "Publish Post" dabayein taaki aapki pehli post live tweet ho jaye!`
+                  : `Aapke account par total ${account?.public_metrics?.tweet_count || 0} posts hain. Agar Twitter Free tier timeline read restrict kar raha hai, toh aap upar box se real posts publish kar sakte hain — published posts yahan instantly display ho jayengi!`}
+              </p>
+            </div>
+
+            {tweetsNotice && (
+              <div className="max-w-md mx-auto p-3 rounded-xl bg-amber-500/10 border border-amber-500/20 text-xs text-amber-300 text-left">
+                <span className="font-bold text-amber-400">Twitter API Note: </span>
+                <span>{tweetsNotice}</span>
+              </div>
+            )}
           </div>
         ) : (
           filteredTweets.map((tweet) => {

@@ -216,49 +216,57 @@ export async function fetchLiveUserProfile(accessToken) {
 
 // Fetch tweets for a user (/2/users/:id/tweets)
 export async function fetchLiveUserTweets(userId, accessToken, maxResults = 20) {
-  const tweetFields = [
-    'attachments',
-    'author_id',
-    'context_annotations',
-    'conversation_id',
-    'created_at',
-    'entities',
-    'geo',
-    'id',
-    'in_reply_to_user_id',
-    'lang',
-    'public_metrics',
-    'referenced_tweets',
-    'reply_settings',
-    'source',
-    'text',
-    'withheld'
-  ].join(',');
+  // First try: Standard query with media attachments
+  try {
+    const tweetFields = 'attachments,author_id,conversation_id,created_at,entities,id,in_reply_to_user_id,lang,public_metrics,referenced_tweets,reply_settings,source,text';
+    const expansions = 'attachments.media_keys,referenced_tweets.id';
+    const mediaFields = 'duration_ms,height,media_key,preview_image_url,type,url,width,alt_text';
 
-  const expansions = 'attachments.media_keys,referenced_tweets.id';
-  const mediaFields = 'duration_ms,height,media_key,preview_image_url,type,url,width,public_metrics,alt_text';
+    const url = `https://api.twitter.com/2/users/${userId}/tweets?max_results=${maxResults}&tweet.fields=${tweetFields}&expansions=${expansions}&media.fields=${mediaFields}`;
 
-  const url = `https://api.twitter.com/2/users/${userId}/tweets?max_results=${maxResults}&tweet.fields=${tweetFields}&expansions=${expansions}&media.fields=${mediaFields}`;
+    const response = await axios.get(url, {
+      headers: {
+        Authorization: `Bearer ${accessToken}`
+      }
+    });
 
-  const response = await axios.get(url, {
-    headers: {
-      Authorization: `Bearer ${accessToken}`
+    const rateLimitInfo = {
+      limit: Number(response.headers['x-rate-limit-limit']) || 1500,
+      remaining: Number(response.headers['x-rate-limit-remaining']) || 1490,
+      reset: Number(response.headers['x-rate-limit-reset']) || Math.floor(Date.now() / 1000) + 900
+    };
+
+    return {
+      raw: response.data,
+      tweets: response.data.data || [],
+      includes: response.data.includes || {},
+      meta: response.data.meta || {},
+      rateLimit: rateLimitInfo
+    };
+  } catch (err1) {
+    console.warn('Standard tweet fetch failed, falling back to minimal fields:', err1.response?.data || err1.message);
+
+    // Second try: Minimal fields (guaranteed compatible with standard tier)
+    try {
+      const urlSimple = `https://api.twitter.com/2/users/${userId}/tweets?max_results=${maxResults}&tweet.fields=created_at,public_metrics,text,source`;
+      const response = await axios.get(urlSimple, {
+        headers: {
+          Authorization: `Bearer ${accessToken}`
+        }
+      });
+
+      return {
+        raw: response.data,
+        tweets: response.data.data || [],
+        includes: {},
+        meta: response.data.meta || {},
+        rateLimit: null
+      };
+    } catch (err2) {
+      console.error('All tweet fetch attempts failed:', err2.response?.data || err2.message);
+      throw err2;
     }
-  });
-
-  const rateLimitInfo = {
-    limit: Number(response.headers['x-rate-limit-limit']) || 1500,
-    remaining: Number(response.headers['x-rate-limit-remaining']) || 1490,
-    reset: Number(response.headers['x-rate-limit-reset']) || Math.floor(Date.now() / 1000) + 900
-  };
-
-  return {
-    raw: response.data,
-    tweets: response.data.data || [],
-    includes: response.data.includes || {},
-    meta: response.data.meta || {},
-    rateLimit: rateLimitInfo
-  };
+  }
 }
 
 // Fetch mentions for a user (/2/users/:id/mentions)
