@@ -117,14 +117,22 @@ export function AppProvider({ children }) {
   const connectWithTwitter = async () => {
     try {
       showToast('Opening Twitter login...', 'info');
-      const res = await api.getAuthUrl();
+      const savedClientId = typeof localStorage !== 'undefined' ? localStorage.getItem('xbot_client_id') : null;
+      const savedClientSecret = typeof localStorage !== 'undefined' ? localStorage.getItem('xbot_client_secret') : null;
+      const callbackUrl = typeof window !== 'undefined' ? `${window.location.origin}/api/twitter/auth/callback` : undefined;
+
+      const res = await api.getAuthUrl(
+        savedClientId || undefined,
+        callbackUrl,
+        savedClientSecret || undefined
+      );
       if (res.success && res.url) {
         window.location.href = res.url;
       }
     } catch (err) {
       // If client ID is missing on the server, open configuration popup so owner can set it
       setIsConnectModalOpen(true);
-      showToast('Twitter Client ID not set yet. Enter it once to enable 1-click connect.', 'error');
+      showToast(err.message || 'Twitter Client ID not set yet. Enter it once to enable 1-click connect.', 'error');
     }
   };
 

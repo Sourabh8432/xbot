@@ -73,7 +73,7 @@ router.get('/account', async (req, res) => {
           // If token expired (401) and we have a refresh_token, attempt refresh
           if (fetchErr.response?.status === 401 && session.refreshToken) {
             console.log('🔄 Access token expired. Refreshing using refresh_token...');
-            const refreshed = await refreshAccessToken(session.refreshToken);
+            const refreshed = await refreshAccessToken(session.refreshToken, session.clientId, session.clientSecret);
             accessToken = refreshed.access_token;
             liveProfile = await fetchLiveUserProfile(accessToken);
           } else {
@@ -204,9 +204,9 @@ router.get('/raw-profile', async (req, res) => {
 // Generate OAuth 2.0 PKCE Auth URL
 router.get('/auth/url', (req, res) => {
   try {
-    const { clientId, redirectUri } = req.query;
+    const { clientId, clientSecret, redirectUri } = req.query;
     const originHost = req.headers['x-forwarded-host'] || req.headers.host;
-    const authData = getTwitterAuthUrl(clientId, redirectUri, originHost);
+    const authData = getTwitterAuthUrl(clientId, redirectUri, originHost, clientSecret);
     res.json({ success: true, ...authData });
   } catch (error) {
     res.status(400).json({ success: false, error: error.message });
@@ -241,6 +241,8 @@ router.get('/auth/callback', async (req, res) => {
       isLive: true,
       accessToken: tokenData.access_token,
       refreshToken: tokenData.refresh_token,
+      clientId: tokenData.clientId,
+      clientSecret: tokenData.clientSecret,
       user: userProfile.user,
       rateLimit: userProfile.rateLimit,
       timestamp: Date.now()
@@ -264,7 +266,7 @@ router.get('/auth/callback', async (req, res) => {
     return res.redirect(getRedirectUrl(`/?auth_success=true&session=${encodeURIComponent(sessionToken)}`));
   } catch (err) {
     console.error('OAuth Callback Error:', err.response?.data || err.message);
-    const msg = err.response?.data?.error_description || err.message;
+    const msg = err.message || err.response?.data?.error_description || 'OAuth Authentication Failed';
     return res.redirect(getRedirectUrl(`/?auth_error=${encodeURIComponent(msg)}`));
   }
 });

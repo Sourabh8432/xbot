@@ -27,6 +27,12 @@ export function SettingsView() {
   const [status, setStatus] = useState(null);
 
   useEffect(() => {
+    if (typeof localStorage !== 'undefined') {
+      const savedId = localStorage.getItem('xbot_client_id');
+      const savedSecret = localStorage.getItem('xbot_client_secret');
+      if (savedId) setClientId(savedId);
+      if (savedSecret) setClientSecret(savedSecret);
+    }
     api.getCredentialsStatus().then((s) => setStatus(s)).catch(() => {});
   }, []);
 
@@ -34,13 +40,21 @@ export function SettingsView() {
     e.preventDefault();
     try {
       setIsSaving(true);
+      const cleanId = clientId.trim();
+      const cleanSecret = clientSecret.trim();
+
+      if (typeof localStorage !== 'undefined') {
+        if (cleanId) localStorage.setItem('xbot_client_id', cleanId);
+        if (cleanSecret) localStorage.setItem('xbot_client_secret', cleanSecret);
+      }
+
       const res = await api.saveCredentials({
-        clientId: clientId.trim(),
-        clientSecret: clientSecret.trim(),
+        clientId: cleanId,
+        clientSecret: cleanSecret,
         redirectUri: redirectUri.trim()
       });
       if (res.success) {
-        showToast('API credentials saved to server runtime!', 'success');
+        showToast('API credentials saved successfully!', 'success');
         const s = await api.getCredentialsStatus();
         setStatus(s);
       }
@@ -201,7 +215,7 @@ export function SettingsView() {
                 Copy Client ID & Secret
               </div>
               <p className="text-slate-400 text-[11px]">
-                Copy the generated OAuth 2.0 Client ID and paste it into the form on the left.
+                Twitter portal me se generated <strong>Client ID</strong> aur <strong>Client Secret</strong> dono copy karke left side form me paste karein aur "Save Credentials" dabayein.
               </p>
             </div>
           </div>

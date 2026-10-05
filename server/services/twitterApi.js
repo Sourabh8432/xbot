@@ -12,8 +12,9 @@ export function generatePKCE() {
 }
 
 // Generate OAuth 2.0 PKCE Auth URL with stateless encrypted state
-export function getTwitterAuthUrl(customClientId, customRedirectUri, originHost = null) {
-  const clientId = customClientId || runtimeConfig.clientId;
+export function getTwitterAuthUrl(customClientId, customRedirectUri, originHost = null, customClientSecret = null) {
+  const clientId = customClientId || runtimeConfig.clientId || process.env.TWITTER_CLIENT_ID;
+  const clientSecret = customClientSecret || runtimeConfig.clientSecret || process.env.TWITTER_CLIENT_SECRET || '';
   
   // Dynamic redirect URI resolver
   let redirectUri = customRedirectUri;
@@ -26,7 +27,7 @@ export function getTwitterAuthUrl(customClientId, customRedirectUri, originHost 
   }
 
   if (!clientId) {
-    throw new Error('Twitter Client ID is not configured. Please set it in Settings or .env');
+    throw new Error('Twitter Client ID is not configured. Please enter your Client ID in Settings or Connect dialog.');
   }
 
   const { codeVerifier, codeChallenge } = generatePKCE();
@@ -35,6 +36,7 @@ export function getTwitterAuthUrl(customClientId, customRedirectUri, originHost 
   const statePayload = {
     codeVerifier,
     clientId,
+    clientSecret,
     redirectUri,
     timestamp: Date.now()
   };
@@ -74,8 +76,8 @@ export async function exchangeCodeForTokens(code, state) {
     throw new Error('OAuth state verification failed. The session may have expired (15 min limit). Please try connecting again.');
   }
 
-  const { codeVerifier, clientId, redirectUri } = session;
-  const clientSecret = runtimeConfig.clientSecret;
+  const { codeVerifier, clientId, redirectUri, clientSecret: sessionSecret } = session;
+  const clientSecret = sessionSecret || runtimeConfig.clientSecret || process.env.TWITTER_CLIENT_SECRET || '';
 
   const bodyParams = new URLSearchParams({
     code: code,
@@ -89,35 +91,58 @@ export async function exchangeCodeForTokens(code, state) {
     'Content-Type': 'application/x-www-form-urlencoded'
   };
 
-  // If confidential client with clientSecret, provide Basic Auth
+  // If confidential client with clientSecret, provide Basic Auth header (RFC 6749 / Twitter API v2 requirement)
   if (clientSecret) {
     const credentials = Buffer.from(`${clientId}:${clientSecret}`).toString('base64');
     headers['Authorization'] = `Basic ${credentials}`;
   }
 
-  const response = await axios.post('https://api.twitter.com/2/oauth2/token', bodyParams.toString(), {
-    headers
-  });
+  try {
+    const response = await axios.post('https://api.twitter.com/2/oauth2/token', bodyParams.toString(), {
+      headers
+    });
 
-  return response.data; // { token_type, expires_in, access_token, scope, refresh_token }
+    return {
+      ...response.data,
+      clientId,
+      clientSecret
+    };
+  } catch (axiosErr) {
+    const errData = axiosErr.response?.data;
+    console.error('Twitter Token Exchange Error:', errData || axiosErr.message);
+
+    if (errData && (errData.error_description === 'Missing valid authorization header' || errData.error === 'invalid_request')) {
+      if (!clientSecret) {
+        throw new Error(
+          'Missing Client Secret: Your Twitter App is set as a "Web App" (Confidential Client). Please provide your Client Secret in the connect screen, or switch your App Type in Twitter Developer Portal to "Native App".'
+        );
+      }
+    }
+
+    const msg = errData?.error_description || errData?.error || axiosErr.message;
+    throw new Error(`Twitter OAuth Token Exchange Failed: ${msg}`);
+  }
 }
 
 // Refresh access token via offline.access refresh_token
 export async function refreshAccessToken(refreshToken, clientId = runtimeConfig.clientId, clientSecret = runtimeConfig.clientSecret) {
   if (!refreshToken) throw new Error('No refresh token provided');
 
+  const resolvedClientId = clientId || runtimeConfig.clientId || process.env.TWITTER_CLIENT_ID;
+  const resolvedClientSecret = clientSecret || runtimeConfig.clientSecret || process.env.TWITTER_CLIENT_SECRET || '';
+
   const bodyParams = new URLSearchParams({
     grant_type: 'refresh_token',
     refresh_token: refreshToken,
-    client_id: clientId
+    client_id: resolvedClientId
   });
 
   const headers = {
     'Content-Type': 'application/x-www-form-urlencoded'
   };
 
-  if (clientSecret) {
-    const credentials = Buffer.from(`${clientId}:${clientSecret}`).toString('base64');
+  if (resolvedClientSecret) {
+    const credentials = Buffer.from(`${resolvedClientId}:${resolvedClientSecret}`).toString('base64');
     headers['Authorization'] = `Basic ${credentials}`;
   }
 

@@ -29,10 +29,11 @@ export const api = {
   getTweets: () => request('/twitter/tweets'),
   getMentions: () => request('/twitter/mentions'),
   getRawProfile: () => request('/twitter/raw-profile'),
-  getAuthUrl: (clientId, redirectUri) => {
+  getAuthUrl: (clientId, redirectUri, clientSecret) => {
     const params = new URLSearchParams();
     if (clientId) params.set('clientId', clientId);
     if (redirectUri) params.set('redirectUri', redirectUri);
+    if (clientSecret) params.set('clientSecret', clientSecret);
     return request(`/twitter/auth/url?${params.toString()}`);
   },
   connectDirectToken: (accessToken) => request('/twitter/connect-token', {
