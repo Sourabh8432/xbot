@@ -54,6 +54,9 @@ export function AccountModal() {
       setLoading(true);
       const res = await api.connectDirectToken(directToken.trim());
       if (res.success) {
+        if (res.sessionToken && typeof localStorage !== 'undefined') {
+          localStorage.setItem('xbot_session', res.sessionToken);
+        }
         showToast('🎉 Connected live X account successfully!', 'success');
         await fetchAccount();
         await fetchTweets();

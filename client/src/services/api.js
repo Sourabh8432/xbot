@@ -1,14 +1,17 @@
 const API_BASE = '/api';
 
 async function request(endpoint, options = {}) {
+  const sessionToken = typeof localStorage !== 'undefined' ? localStorage.getItem('xbot_session') : null;
   const headers = {
     'Content-Type': 'application/json',
+    ...(sessionToken ? { 'Authorization': `Bearer ${sessionToken}` } : {}),
     ...(options.headers || {})
   };
 
   const response = await fetch(`${API_BASE}${endpoint}`, {
     ...options,
-    headers
+    headers,
+    credentials: 'include'
   });
 
   const data = await response.json().catch(() => ({}));

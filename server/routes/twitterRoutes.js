@@ -2,6 +2,7 @@ import express from 'express';
 import {
   getTwitterAuthUrl,
   exchangeCodeForTokens,
+  refreshAccessToken,
   fetchLiveUserProfile,
   fetchLiveUserTweets,
   fetchLiveUserMentions,
@@ -9,29 +10,76 @@ import {
 } from '../services/twitterApi.js';
 import { addBotLog } from '../services/botService.js';
 import { runtimeConfig } from '../config.js';
+import { encryptPayload, decryptPayload } from '../services/security.js';
 
 const router = express.Router();
 
-// Current active session state (purely live data, no dummy accounts)
-let activeAccountState = {
+// Fallback in-memory session (for local development)
+let memorySession = {
   isLive: false,
-  liveToken: null,
-  liveUser: null,
-  liveTweets: [],
-  liveMentions: [],
-  liveRaw: null,
-  liveRateLimit: null
+  accessToken: null,
+  refreshToken: null,
+  user: null,
+  rateLimit: null
 };
+
+// Helper to extract token & session from request (Header > Cookie > Memory)
+function getRequestSession(req) {
+  // 1. Authorization header (Bearer token)
+  const authHeader = req.headers.authorization;
+  if (authHeader && authHeader.startsWith('Bearer ')) {
+    const rawToken = authHeader.substring(7).trim();
+    // Check if it's an encrypted session payload
+    const decrypted = decryptPayload(rawToken);
+    if (decrypted && decrypted.accessToken) {
+      return decrypted;
+    }
+    // Otherwise direct access token
+    return { accessToken: rawToken, isLive: true };
+  }
+
+  // 2. Cookie header (xbot_session)
+  if (req.headers.cookie) {
+    const match = req.headers.cookie.match(/xbot_session=([^;]+)/);
+    if (match && match[1]) {
+      const decrypted = decryptPayload(match[1]);
+      if (decrypted && decrypted.accessToken) {
+        return decrypted;
+      }
+    }
+  }
+
+  // 3. In-memory session fallback
+  if (memorySession.accessToken) {
+    return memorySession;
+  }
+
+  return null;
+}
 
 // Return the currently active account details
 router.get('/account', async (req, res) => {
   try {
-    if (activeAccountState.isLive && activeAccountState.liveToken) {
+    const session = getRequestSession(req);
+
+    if (session && session.accessToken) {
       try {
-        const liveProfile = await fetchLiveUserProfile(activeAccountState.liveToken);
-        activeAccountState.liveUser = liveProfile.user;
-        activeAccountState.liveRaw = liveProfile.raw;
-        activeAccountState.liveRateLimit = liveProfile.rateLimit;
+        let accessToken = session.accessToken;
+        let liveProfile;
+
+        try {
+          liveProfile = await fetchLiveUserProfile(accessToken);
+        } catch (fetchErr) {
+          // If token expired (401) and we have a refresh_token, attempt refresh
+          if (fetchErr.response?.status === 401 && session.refreshToken) {
+            console.log('🔄 Access token expired. Refreshing using refresh_token...');
+            const refreshed = await refreshAccessToken(session.refreshToken);
+            accessToken = refreshed.access_token;
+            liveProfile = await fetchLiveUserProfile(accessToken);
+          } else {
+            throw fetchErr;
+          }
+        }
 
         return res.json({
           success: true,
@@ -41,14 +89,14 @@ router.get('/account', async (req, res) => {
           rateLimit: liveProfile.rateLimit
         });
       } catch (liveErr) {
-        console.error('Error fetching live X profile:', liveErr.message);
-        if (activeAccountState.liveUser) {
+        console.error('Error fetching live X profile:', liveErr.response?.data || liveErr.message);
+        if (session.user) {
           return res.json({
             success: true,
             isLive: true,
             cached: true,
-            account: activeAccountState.liveUser,
-            rateLimit: activeAccountState.liveRateLimit
+            account: session.user,
+            rateLimit: session.rateLimit
           });
         }
       }
@@ -69,10 +117,18 @@ router.get('/account', async (req, res) => {
 // Return tweets for the active account
 router.get('/tweets', async (req, res) => {
   try {
-    if (activeAccountState.isLive && activeAccountState.liveToken && activeAccountState.liveUser) {
+    const session = getRequestSession(req);
+
+    if (session && session.accessToken) {
       try {
-        const tweetsData = await fetchLiveUserTweets(activeAccountState.liveUser.id, activeAccountState.liveToken);
-        activeAccountState.liveTweets = tweetsData.tweets;
+        // Need user ID. If not in session, fetch user profile first
+        let userId = session.user?.id;
+        if (!userId) {
+          const profile = await fetchLiveUserProfile(session.accessToken);
+          userId = profile.user.id;
+        }
+
+        const tweetsData = await fetchLiveUserTweets(userId, session.accessToken);
         return res.json({
           success: true,
           isLive: true,
@@ -82,10 +138,7 @@ router.get('/tweets', async (req, res) => {
           rateLimit: tweetsData.rateLimit
         });
       } catch (err) {
-        console.error('Error fetching live tweets:', err.message);
-        if (activeAccountState.liveTweets.length > 0) {
-          return res.json({ success: true, isLive: true, cached: true, tweets: activeAccountState.liveTweets });
-        }
+        console.error('Error fetching live tweets:', err.response?.data || err.message);
       }
     }
 
@@ -102,12 +155,20 @@ router.get('/tweets', async (req, res) => {
 // Return mentions
 router.get('/mentions', async (req, res) => {
   try {
-    if (activeAccountState.isLive && activeAccountState.liveToken && activeAccountState.liveUser) {
+    const session = getRequestSession(req);
+
+    if (session && session.accessToken) {
       try {
-        const mentionsData = await fetchLiveUserMentions(activeAccountState.liveUser.id, activeAccountState.liveToken);
+        let userId = session.user?.id;
+        if (!userId) {
+          const profile = await fetchLiveUserProfile(session.accessToken);
+          userId = profile.user.id;
+        }
+
+        const mentionsData = await fetchLiveUserMentions(userId, session.accessToken);
         return res.json({ success: true, isLive: true, mentions: mentionsData });
       } catch (err) {
-        console.error('Error fetching live mentions:', err.message);
+        console.error('Error fetching live mentions:', err.response?.data || err.message);
       }
     }
 
@@ -122,10 +183,17 @@ router.get('/mentions', async (req, res) => {
 });
 
 // Return full raw JSON response for developer inspection
-router.get('/raw-profile', (req, res) => {
-  if (activeAccountState.isLive && activeAccountState.liveRaw) {
-    return res.json({ success: true, isLive: true, raw: activeAccountState.liveRaw });
+router.get('/raw-profile', async (req, res) => {
+  const session = getRequestSession(req);
+  if (session && session.accessToken) {
+    try {
+      const liveProfile = await fetchLiveUserProfile(session.accessToken);
+      return res.json({ success: true, isLive: true, raw: liveProfile.raw });
+    } catch (err) {
+      // Fallback
+    }
   }
+
   return res.json({
     success: true,
     isLive: false,
@@ -137,18 +205,18 @@ router.get('/raw-profile', (req, res) => {
 router.get('/auth/url', (req, res) => {
   try {
     const { clientId, redirectUri } = req.query;
-    const authData = getTwitterAuthUrl(clientId, redirectUri);
+    const originHost = req.headers['x-forwarded-host'] || req.headers.host;
+    const authData = getTwitterAuthUrl(clientId, redirectUri, originHost);
     res.json({ success: true, ...authData });
   } catch (error) {
     res.status(400).json({ success: false, error: error.message });
   }
 });
 
-// OAuth Callback endpoint
+// OAuth Callback endpoint (Stateless & Vercel Serverless Ready)
 router.get('/auth/callback', async (req, res) => {
   const { code, state, error, error_description } = req.query;
 
-  // Use relative redirect on same domain or custom CLIENT_URL if provided
   const getRedirectUrl = (pathWithQuery) => {
     const base = process.env.CLIENT_URL ? process.env.CLIENT_URL.replace(/\/$/, '') : '';
     return `${base}${pathWithQuery}`;
@@ -164,18 +232,36 @@ router.get('/auth/callback', async (req, res) => {
 
   try {
     const tokenData = await exchangeCodeForTokens(code, state);
-    activeAccountState.isLive = true;
-    activeAccountState.liveToken = tokenData.access_token;
 
     // Fetch user details immediately from X API v2
     const userProfile = await fetchLiveUserProfile(tokenData.access_token);
-    activeAccountState.liveUser = userProfile.user;
-    activeAccountState.liveRaw = userProfile.raw;
-    activeAccountState.liveRateLimit = userProfile.rateLimit;
+
+    // Build encrypted session token for cross-lambda & cross-device persistence
+    const sessionData = {
+      isLive: true,
+      accessToken: tokenData.access_token,
+      refreshToken: tokenData.refresh_token,
+      user: userProfile.user,
+      rateLimit: userProfile.rateLimit,
+      timestamp: Date.now()
+    };
+    const sessionToken = encryptPayload(sessionData);
+
+    // Update memory fallback
+    memorySession = sessionData;
 
     addBotLog('SUCCESS', 'X Account Connected', `Connected live account @${userProfile.user.username} via OAuth 2.0 PKCE`);
 
-    return res.redirect(getRedirectUrl('/?auth_success=true'));
+    // Set secure HTTP-only cookie + pass in URL query for client localStorage
+    res.cookie('xbot_session', sessionToken, {
+      path: '/',
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      maxAge: 30 * 24 * 60 * 60 * 1000 // 30 days
+    });
+
+    return res.redirect(getRedirectUrl(`/?auth_success=true&session=${encodeURIComponent(sessionToken)}`));
   } catch (err) {
     console.error('OAuth Callback Error:', err.response?.data || err.message);
     const msg = err.response?.data?.error_description || err.message;
@@ -191,18 +277,34 @@ router.post('/connect-token', async (req, res) => {
   }
 
   try {
-    const userProfile = await fetchLiveUserProfile(accessToken.trim());
-    activeAccountState.isLive = true;
-    activeAccountState.liveToken = accessToken.trim();
-    activeAccountState.liveUser = userProfile.user;
-    activeAccountState.liveRaw = userProfile.raw;
-    activeAccountState.liveRateLimit = userProfile.rateLimit;
+    const token = accessToken.trim();
+    const userProfile = await fetchLiveUserProfile(token);
+
+    const sessionData = {
+      isLive: true,
+      accessToken: token,
+      user: userProfile.user,
+      rateLimit: userProfile.rateLimit,
+      timestamp: Date.now()
+    };
+    const sessionToken = encryptPayload(sessionData);
+
+    memorySession = sessionData;
 
     addBotLog('SUCCESS', 'Live Account Connected', `Connected live account @${userProfile.user.username} via Direct Token`);
+
+    res.cookie('xbot_session', sessionToken, {
+      path: '/',
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      maxAge: 30 * 24 * 60 * 60 * 1000
+    });
 
     res.json({
       success: true,
       message: 'Account successfully connected!',
+      sessionToken,
       account: userProfile.user,
       rateLimit: userProfile.rateLimit
     });
@@ -233,31 +335,31 @@ router.post('/save-credentials', (req, res) => {
 
 // Get current credentials status
 router.get('/credentials-status', (req, res) => {
+  const originHost = req.headers['x-forwarded-host'] || req.headers.host;
+  const computedRedirectUri = originHost
+    ? `https://${originHost}/api/twitter/auth/callback`
+    : runtimeConfig.redirectUri;
+
   res.json({
     hasClientId: !!runtimeConfig.clientId,
     clientIdPreview: runtimeConfig.clientId ? `${runtimeConfig.clientId.substring(0, 6)}...` : null,
     hasClientSecret: !!runtimeConfig.clientSecret,
-    redirectUri: runtimeConfig.redirectUri
-  });
-});
-
-// Get connection status
-router.get('/accounts', (req, res) => {
-  res.json({
-    isLive: activeAccountState.isLive,
-    liveUser: activeAccountState.liveUser
+    redirectUri: runtimeConfig.redirectUri || computedRedirectUri,
+    detectedOriginUri: computedRedirectUri
   });
 });
 
 // Disconnect account
 router.post('/disconnect', (req, res) => {
-  activeAccountState.isLive = false;
-  activeAccountState.liveToken = null;
-  activeAccountState.liveUser = null;
-  activeAccountState.liveTweets = [];
-  activeAccountState.liveRaw = null;
-  activeAccountState.liveRateLimit = null;
+  memorySession = {
+    isLive: false,
+    accessToken: null,
+    refreshToken: null,
+    user: null,
+    rateLimit: null
+  };
 
+  res.clearCookie('xbot_session', { path: '/' });
   addBotLog('INFO', 'Account Disconnected', 'Disconnected X account from dashboard.');
 
   res.json({ success: true, message: 'Account disconnected successfully.' });
@@ -270,7 +372,8 @@ router.post('/tweet', async (req, res) => {
     return res.status(400).json({ success: false, error: 'Tweet text cannot be empty' });
   }
 
-  if (!activeAccountState.isLive || !activeAccountState.liveToken) {
+  const session = getRequestSession(req);
+  if (!session || !session.accessToken) {
     return res.status(400).json({
       success: false,
       error: 'No X account connected. Please connect your X account first to publish tweets.'
@@ -278,7 +381,7 @@ router.post('/tweet', async (req, res) => {
   }
 
   try {
-    const result = await postLiveTweet(activeAccountState.liveToken, text);
+    const result = await postLiveTweet(session.accessToken, text);
     addBotLog('SUCCESS', 'Tweet Published to X', `Tweet ID: ${result.data?.id}`);
     return res.json({ success: true, isLive: true, result });
   } catch (err) {

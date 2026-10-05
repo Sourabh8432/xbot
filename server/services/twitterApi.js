@@ -1,44 +1,44 @@
 import crypto from 'crypto';
 import axios from 'axios';
 import { runtimeConfig } from '../config.js';
-
-// In-memory store for PKCE verifiers keyed by state
-const pkceSessionStore = new Map();
-
-// Helper to base64url encode
-function base64URLEncode(str) {
-  return str.toString('base64')
-    .replace(/=/g, '')
-    .replace(/\+/g, '-')
-    .replace(/\//g, '_');
-}
+import { encryptPayload, decryptPayload, base64urlEncode } from './security.js';
 
 // Generate code verifier and code challenge (S256)
 export function generatePKCE() {
-  const codeVerifier = base64URLEncode(crypto.randomBytes(32));
+  const codeVerifier = base64urlEncode(crypto.randomBytes(32));
   const sha256 = crypto.createHash('sha256').update(codeVerifier).digest();
-  const codeChallenge = base64URLEncode(sha256);
+  const codeChallenge = base64urlEncode(sha256);
   return { codeVerifier, codeChallenge };
 }
 
-// Generate OAuth 2.0 PKCE Auth URL
-export function getTwitterAuthUrl(customClientId, customRedirectUri) {
+// Generate OAuth 2.0 PKCE Auth URL with stateless encrypted state
+export function getTwitterAuthUrl(customClientId, customRedirectUri, originHost = null) {
   const clientId = customClientId || runtimeConfig.clientId;
-  const redirectUri = customRedirectUri || runtimeConfig.redirectUri;
+  
+  // Dynamic redirect URI resolver
+  let redirectUri = customRedirectUri;
+  if (!redirectUri) {
+    if (originHost) {
+      redirectUri = `https://${originHost}/api/twitter/auth/callback`;
+    } else {
+      redirectUri = runtimeConfig.redirectUri;
+    }
+  }
 
   if (!clientId) {
     throw new Error('Twitter Client ID is not configured. Please set it in Settings or .env');
   }
 
-  const state = crypto.randomBytes(16).toString('hex');
   const { codeVerifier, codeChallenge } = generatePKCE();
 
-  pkceSessionStore.set(state, {
+  // Pack state with AES-256-GCM encryption (Valid across all serverless workers)
+  const statePayload = {
     codeVerifier,
-    createdAt: Date.now(),
     clientId,
-    redirectUri
-  });
+    redirectUri,
+    timestamp: Date.now()
+  };
+  const state = encryptPayload(statePayload);
 
   const scopes = [
     'tweet.read',
@@ -68,14 +68,13 @@ export function getTwitterAuthUrl(customClientId, customRedirectUri) {
 
 // Exchange authorization code for access & refresh tokens
 export async function exchangeCodeForTokens(code, state) {
-  const session = pkceSessionStore.get(state);
+  // Decrypt state payload (valid within 15 minutes)
+  const session = decryptPayload(state, 15 * 60 * 1000);
   if (!session) {
-    throw new Error('Invalid or expired state parameter during OAuth flow');
+    throw new Error('OAuth state verification failed. The session may have expired (15 min limit). Please try connecting again.');
   }
 
   const { codeVerifier, clientId, redirectUri } = session;
-  pkceSessionStore.delete(state);
-
   const clientSecret = runtimeConfig.clientSecret;
 
   const bodyParams = new URLSearchParams({
@@ -101,6 +100,32 @@ export async function exchangeCodeForTokens(code, state) {
   });
 
   return response.data; // { token_type, expires_in, access_token, scope, refresh_token }
+}
+
+// Refresh access token via offline.access refresh_token
+export async function refreshAccessToken(refreshToken, clientId = runtimeConfig.clientId, clientSecret = runtimeConfig.clientSecret) {
+  if (!refreshToken) throw new Error('No refresh token provided');
+
+  const bodyParams = new URLSearchParams({
+    grant_type: 'refresh_token',
+    refresh_token: refreshToken,
+    client_id: clientId
+  });
+
+  const headers = {
+    'Content-Type': 'application/x-www-form-urlencoded'
+  };
+
+  if (clientSecret) {
+    const credentials = Buffer.from(`${clientId}:${clientSecret}`).toString('base64');
+    headers['Authorization'] = `Basic ${credentials}`;
+  }
+
+  const response = await axios.post('https://api.twitter.com/2/oauth2/token', bodyParams.toString(), {
+    headers
+  });
+
+  return response.data;
 }
 
 // Fetch user profile (/2/users/me) with ALL available fields & expansions
@@ -151,9 +176,9 @@ export async function fetchLiveUserProfile(accessToken) {
   });
 
   const rateLimitInfo = {
-    limit: response.headers['x-rate-limit-limit'] || 75,
-    remaining: response.headers['x-rate-limit-remaining'] || 74,
-    reset: response.headers['x-rate-limit-reset'] || Math.floor(Date.now() / 1000) + 900
+    limit: Number(response.headers['x-rate-limit-limit']) || 75,
+    remaining: Number(response.headers['x-rate-limit-remaining']) || 74,
+    reset: Number(response.headers['x-rate-limit-reset']) || Math.floor(Date.now() / 1000) + 900
   };
 
   return {
@@ -197,9 +222,9 @@ export async function fetchLiveUserTweets(userId, accessToken, maxResults = 20) 
   });
 
   const rateLimitInfo = {
-    limit: response.headers['x-rate-limit-limit'] || 1500,
-    remaining: response.headers['x-rate-limit-remaining'] || 1490,
-    reset: response.headers['x-rate-limit-reset'] || Math.floor(Date.now() / 1000) + 900
+    limit: Number(response.headers['x-rate-limit-limit']) || 1500,
+    remaining: Number(response.headers['x-rate-limit-remaining']) || 1490,
+    reset: Number(response.headers['x-rate-limit-reset']) || Math.floor(Date.now() / 1000) + 900
   };
 
   return {

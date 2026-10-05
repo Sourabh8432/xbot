@@ -81,6 +81,9 @@ export function AppProvider({ children }) {
   const handleDisconnect = async () => {
     try {
       await api.disconnectAccount();
+      if (typeof localStorage !== 'undefined') {
+        localStorage.removeItem('xbot_session');
+      }
       setAccount(null);
       setIsLive(false);
       setTweets([]);
@@ -94,6 +97,9 @@ export function AppProvider({ children }) {
   useEffect(() => {
     // Check URL parameters for OAuth redirect callbacks
     const params = new URLSearchParams(window.location.search);
+    if (params.get('session') && typeof localStorage !== 'undefined') {
+      localStorage.setItem('xbot_session', params.get('session'));
+    }
     if (params.get('auth_success')) {
       showToast('🎉 X Account successfully connected via OAuth 2.0!', 'success');
       window.history.replaceState({}, document.title, window.location.pathname);

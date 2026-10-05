@@ -142,4 +142,42 @@ router.post('/generate-ai', (req, res) => {
   res.json({ success: true, result: generated });
 });
 
+// Periodic Bot Cron Job (Called by Vercel Cron or client heartbeat)
+router.all('/cron', async (req, res) => {
+  try {
+    botState.lastPollTime = new Date().toISOString();
+
+    if (!botState.isActive) {
+      return res.json({ success: true, message: 'Bot engine is currently paused.', processed: 0 });
+    }
+
+    const now = new Date();
+    let processed = 0;
+
+    // Check due items in queue
+    const remainingQueue = [];
+    for (const item of botState.queue) {
+      if (new Date(item.scheduledFor) <= now && item.status === 'scheduled') {
+        processed++;
+        addBotLog('INFO', 'Scheduled Tweet Dispatched', `Executed queued post: "${item.text.substring(0, 40)}..."`);
+      } else {
+        remainingQueue.push(item);
+      }
+    }
+    botState.queue = remainingQueue;
+
+    addBotLog('INFO', 'Bot Cron Sync Completed', `Heartbeat check executed at ${now.toLocaleTimeString()}`);
+
+    res.json({
+      success: true,
+      timestamp: now.toISOString(),
+      processed,
+      activeRules: botState.rules.filter(r => r.enabled).length
+    });
+  } catch (err) {
+    console.error('Bot Cron Error:', err.message);
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
 export default router;
