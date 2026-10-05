@@ -5,7 +5,7 @@ export const config = {
   port: process.env.PORT || 3001,
   twitterClientId: process.env.TWITTER_CLIENT_ID || '',
   twitterClientSecret: process.env.TWITTER_CLIENT_SECRET || '',
-  twitterRedirectUri: process.env.TWITTER_REDIRECT_URI || 'http://localhost:3001/api/twitter/auth/callback',
+  twitterRedirectUri: process.env.TWITTER_REDIRECT_URI || (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}/api/twitter/auth/callback` : 'http://localhost:3001/api/twitter/auth/callback'),
   twitterBearerToken: process.env.TWITTER_BEARER_TOKEN || '',
   isProduction: process.env.NODE_ENV === 'production',
 };

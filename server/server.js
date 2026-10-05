@@ -20,12 +20,14 @@ app.use(cors({
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// API Routes
+// API Routes (Mounted with and without /api prefix for flexible Vercel rewrite routing)
 app.use('/api/twitter', twitterRoutes);
+app.use('/twitter', twitterRoutes);
 app.use('/api/bot', botRoutes);
+app.use('/bot', botRoutes);
 
 // Health check
-app.get('/api/health', (req, res) => {
+app.get(['/api/health', '/health'], (req, res) => {
   res.json({
     status: 'online',
     timestamp: new Date().toISOString(),

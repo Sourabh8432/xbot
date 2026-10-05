@@ -148,12 +148,18 @@ router.get('/auth/url', (req, res) => {
 router.get('/auth/callback', async (req, res) => {
   const { code, state, error, error_description } = req.query;
 
+  // Use relative redirect on same domain or custom CLIENT_URL if provided
+  const getRedirectUrl = (pathWithQuery) => {
+    const base = process.env.CLIENT_URL ? process.env.CLIENT_URL.replace(/\/$/, '') : '';
+    return `${base}${pathWithQuery}`;
+  };
+
   if (error) {
-    return res.redirect(`http://localhost:5173/?auth_error=${encodeURIComponent(error_description || error)}`);
+    return res.redirect(getRedirectUrl(`/?auth_error=${encodeURIComponent(error_description || error)}`));
   }
 
   if (!code || !state) {
-    return res.redirect('http://localhost:5173/?auth_error=Missing_code_or_state');
+    return res.redirect(getRedirectUrl('/?auth_error=Missing_code_or_state'));
   }
 
   try {
@@ -169,11 +175,11 @@ router.get('/auth/callback', async (req, res) => {
 
     addBotLog('SUCCESS', 'X Account Connected', `Connected live account @${userProfile.user.username} via OAuth 2.0 PKCE`);
 
-    return res.redirect('http://localhost:5173/?auth_success=true');
+    return res.redirect(getRedirectUrl('/?auth_success=true'));
   } catch (err) {
     console.error('OAuth Callback Error:', err.response?.data || err.message);
     const msg = err.response?.data?.error_description || err.message;
-    return res.redirect(`http://localhost:5173/?auth_error=${encodeURIComponent(msg)}`);
+    return res.redirect(getRedirectUrl(`/?auth_error=${encodeURIComponent(msg)}`));
   }
 });
 

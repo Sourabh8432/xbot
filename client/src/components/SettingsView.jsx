@@ -18,7 +18,10 @@ export function SettingsView() {
 
   const [clientId, setClientId] = useState('');
   const [clientSecret, setClientSecret] = useState('');
-  const [redirectUri, setRedirectUri] = useState('http://localhost:3001/api/twitter/auth/callback');
+  const defaultCallback = typeof window !== 'undefined'
+    ? `${window.location.origin}/api/twitter/auth/callback`
+    : 'http://localhost:3001/api/twitter/auth/callback';
+  const [redirectUri, setRedirectUri] = useState(defaultCallback);
   const [isSaving, setIsSaving] = useState(false);
   const [copiedCallback, setCopiedCallback] = useState(false);
   const [status, setStatus] = useState(null);
@@ -187,8 +190,8 @@ export function SettingsView() {
                 Set Callback & Website URLs
               </div>
               <p className="text-slate-400 text-[11px]">
-                • Callback URL: <code className="text-sky-400 font-mono">http://localhost:3001/api/twitter/auth/callback</code>
-                <br />• Website URL: <code className="text-sky-400 font-mono">http://localhost:5173</code>
+                • Callback URL: <code className="text-sky-400 font-mono">{defaultCallback}</code>
+                <br />• Website URL: <code className="text-sky-400 font-mono">{typeof window !== 'undefined' ? window.location.origin : 'http://localhost:5173'}</code>
               </p>
             </div>
 
