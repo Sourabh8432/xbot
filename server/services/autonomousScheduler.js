@@ -78,10 +78,13 @@ export async function replenishQueueIfNeeded() {
           mediaInfo = {
             filename: cardRes.filename,
             localPath: cardRes.localPath,
-            publicUrl: cardRes.publicUrl
+            publicUrl: cardRes.publicUrl || cardRes.dataUrl || cardRes.svgDataUri,
+            dataUrl: cardRes.dataUrl,
+            svgDataUri: cardRes.svgDataUri
           };
         }
       }
+
 
       const scheduledItem = {
         id: `auto-${Date.now()}-${Math.floor(Math.random() * 1000)}`,

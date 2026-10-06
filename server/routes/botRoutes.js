@@ -208,10 +208,13 @@ router.post('/generate-ai', async (req, res) => {
         media = {
           filename: cardRes.filename,
           localPath: cardRes.localPath,
-          publicUrl: cardRes.publicUrl
+          publicUrl: cardRes.publicUrl || cardRes.dataUrl || cardRes.svgDataUri,
+          dataUrl: cardRes.dataUrl,
+          svgDataUri: cardRes.svgDataUri
         };
       }
     }
+
 
     res.json({
       success: true,

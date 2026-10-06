@@ -27,7 +27,70 @@ import {
   ExternalLink
 } from 'lucide-react';
 
+// Helper to extract or dynamically render vector SVG data URI for visual cards
+export function getCardImageSrc(item) {
+
+  if (!item) return null;
+  if (item.media?.dataUrl) return item.media.dataUrl;
+  if (item.media?.svgDataUri) return item.media.svgDataUri;
+  if (item.media?.publicUrl && item.media.publicUrl.startsWith('data:')) return item.media.publicUrl;
+  if (item.mediaUrl && item.mediaUrl.startsWith('data:')) return item.mediaUrl;
+
+  const card = item.visualCard || item.media?.visualCard;
+  if (card) {
+    const safeTag = String(card.tag || 'BUSINESS CASE STUDY').toUpperCase();
+    const safeTitle = String(card.title || item.topic || 'Strategy Breakdown');
+    const safeStat = String(card.stat || 'Key Growth Driver');
+    const safeHighlight = String(card.highlight || 'Core Playbook');
+    const safeLesson = String(card.keyLesson || 'Do unscalable things first to understand what moves metrics.');
+
+    const svg = `
+<svg width="1200" height="675" viewBox="0 0 1200 675" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1200" y2="675" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#090D16" />
+      <stop offset="50%" stop-color="#0F172A" />
+      <stop offset="100%" stop-color="#030712" />
+    </linearGradient>
+    <radialGradient id="glow" cx="600" cy="100" r="500" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#38BDF8" stop-opacity="0.18" />
+      <stop offset="100%" stop-color="#6366F1" stop-opacity="0" />
+    </radialGradient>
+    <linearGradient id="textGrad" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#38BDF8" />
+      <stop offset="50%" stop-color="#818CF8" />
+      <stop offset="100%" stop-color="#C084FC" />
+    </linearGradient>
+  </defs>
+  <rect width="1200" height="675" fill="url(#bg)" />
+  <rect width="1200" height="675" fill="url(#glow)" />
+  <rect x="36" y="36" width="1128" height="603" rx="32" fill="#0F172A" fill-opacity="0.6" stroke="#334155" stroke-width="2" />
+  <line x1="80" y1="130" x2="1120" y2="130" stroke="#1E293B" stroke-width="1.5" stroke-dasharray="6 6" />
+  <line x1="80" y1="520" x2="1120" y2="520" stroke="#1E293B" stroke-width="1.5" stroke-dasharray="6 6" />
+  <rect x="80" y="72" width="260" height="36" rx="18" fill="#1E293B" stroke="#38BDF8" stroke-width="1.5" stroke-opacity="0.6" />
+  <circle cx="102" cy="90" r="5" fill="#38BDF8" />
+  <text x="118" y="95" fill="#38BDF8" font-family="system-ui, -apple-system, sans-serif" font-size="13" font-weight="800" letter-spacing="1.5">${safeTag}</text>
+  <text x="1120" y="95" text-anchor="end" fill="#94A3B8" font-family="system-ui, -apple-system, sans-serif" font-size="13" font-weight="700" letter-spacing="1">X AUTONOMOUS ENGINE ⚡</text>
+  <text x="80" y="210" fill="#F8FAFC" font-family="system-ui, -apple-system, sans-serif" font-size="44" font-weight="900" letter-spacing="-0.5">${safeTitle}</text>
+  <rect x="80" y="260" width="1040" height="110" rx="20" fill="#1E293B" fill-opacity="0.8" stroke="#475569" stroke-width="1.5" />
+  <text x="116" y="302" fill="#94A3B8" font-family="system-ui, -apple-system, sans-serif" font-size="14" font-weight="700" letter-spacing="1.2">KEY IMPACT METRIC</text>
+  <text x="116" y="348" fill="url(#textGrad)" font-family="system-ui, -apple-system, sans-serif" font-size="36" font-weight="900">${safeStat}</text>
+  <rect x="80" y="390" width="1040" height="96" rx="16" fill="#0284C7" fill-opacity="0.1" stroke="#38BDF8" stroke-width="1.5" stroke-opacity="0.3" />
+  <text x="116" y="425" fill="#38BDF8" font-family="system-ui, -apple-system, sans-serif" font-size="13" font-weight="800" letter-spacing="1">THE UNCONVENTIONAL STRATEGY</text>
+  <text x="116" y="462" fill="#E2E8F0" font-family="system-ui, -apple-system, sans-serif" font-size="22" font-weight="700">${safeHighlight}</text>
+  <text x="80" y="565" fill="#64748B" font-family="system-ui, -apple-system, sans-serif" font-size="12" font-weight="800" letter-spacing="1.5">KEY TAKEAWAY FOR FOUNDERS:</text>
+  <text x="80" y="600" fill="#F1F5F9" font-family="system-ui, -apple-system, sans-serif" font-size="20" font-weight="600">"${safeLesson}"</text>
+</svg>
+    `.trim();
+
+    return `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`;
+  }
+
+  return item.media?.publicUrl || item.mediaUrl || null;
+}
+
 export function BotAutomation() {
+
   const { botStatus, toggleBot, showToast, account } = useApp();
 
   const [settings, setSettings] = useState({
@@ -448,13 +511,13 @@ export function BotAutomation() {
                     </p>
 
                     {/* Infographic Preview Thumbnail */}
-                    {item.media?.publicUrl && (
+                    {getCardImageSrc(item) && (
                       <div className="relative rounded-xl overflow-hidden border border-white/10 bg-slate-900 group">
                         <img
-                          src={item.media.publicUrl}
+                          src={getCardImageSrc(item)}
                           alt="Generated Visual Infographic"
-                          className="w-full h-36 object-cover cursor-pointer group-hover:scale-105 transition duration-300"
-                          onClick={() => setPreviewImage(item.media.publicUrl)}
+                          className="w-full h-auto max-h-48 object-cover cursor-pointer group-hover:scale-105 transition duration-300"
+                          onClick={() => setPreviewImage(getCardImageSrc(item))}
                         />
                         <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition flex items-center justify-center pointer-events-none">
                           <span className="text-[11px] font-bold text-white flex items-center gap-1 bg-black/60 px-3 py-1 rounded-full">
@@ -463,6 +526,7 @@ export function BotAutomation() {
                         </div>
                       </div>
                     )}
+
                   </div>
 
                   {/* Actions Bar */}
@@ -653,12 +717,12 @@ export function BotAutomation() {
                       {new Date(pub.publishedAt).toLocaleString()}
                     </span>
                   </div>
-                  <p className="text-xs text-slate-200 whitespace-pre-wrap">{pub.text}</p>
-                  {pub.mediaUrl && (
-                    <div className="w-32 h-20 rounded-lg overflow-hidden border border-white/10">
-                      <img src={pub.mediaUrl} alt="Visual card" className="w-full h-full object-cover cursor-pointer" onClick={() => setPreviewImage(pub.mediaUrl)} />
+                  {getCardImageSrc(pub) && (
+                    <div className="w-36 h-20 rounded-lg overflow-hidden border border-white/10">
+                      <img src={getCardImageSrc(pub)} alt="Visual card" className="w-full h-full object-cover cursor-pointer" onClick={() => setPreviewImage(getCardImageSrc(pub))} />
                     </div>
                   )}
+
                 </div>
               ))}
             </div>

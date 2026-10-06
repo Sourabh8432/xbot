@@ -16,8 +16,10 @@ import {
   Download,
   Lightbulb
 } from 'lucide-react';
+import { getCardImageSrc } from './BotAutomation';
 
 export function AiTweetGenerator() {
+
   const { showToast, fetchTweets } = useApp();
 
   const [topic, setTopic] = useState('');
@@ -241,19 +243,19 @@ export function AiTweetGenerator() {
                 Attached Visual Infographic (High-Resolution Card)
               </span>
 
-              {result.media?.publicUrl ? (
+              {getCardImageSrc(result) ? (
                 <div className="rounded-2xl overflow-hidden border border-white/10 bg-slate-950 shadow-xl group relative">
                   <img
-                    src={result.media.publicUrl}
+                    src={getCardImageSrc(result)}
                     alt="Visual Infographic Card"
                     className="w-full h-auto object-cover cursor-pointer group-hover:scale-102 transition"
                     onClick={() => setPreviewModal(true)}
                   />
                   <div className="p-3 bg-slate-900/90 border-t border-white/5 flex items-center justify-between text-xs">
-                    <span className="text-slate-400 text-[11px]">1200 x 675 Crisp PNG</span>
+                    <span className="text-slate-400 text-[11px]">1200 x 675 Crisp Graphic</span>
                     <a
-                      href={result.media.publicUrl}
-                      download={result.media.filename}
+                      href={getCardImageSrc(result)}
+                      download={result.media?.filename || 'infographic-card.png'}
                       className="text-sky-400 hover:underline flex items-center gap-1 text-[11px] font-semibold"
                     >
                       <Download className="w-3 h-3" /> Download Card
@@ -271,16 +273,17 @@ export function AiTweetGenerator() {
       )}
 
       {/* Fullscreen modal for preview */}
-      {previewModal && result?.media?.publicUrl && (
+      {previewModal && getCardImageSrc(result) && (
         <div
           className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in"
           onClick={() => setPreviewModal(false)}
         >
           <div className="max-w-4xl max-h-[90vh] rounded-2xl overflow-hidden border border-white/20 shadow-2xl">
-            <img src={result.media.publicUrl} alt="Expanded preview" className="w-full h-auto" />
+            <img src={getCardImageSrc(result)} alt="Expanded preview" className="w-full h-auto" />
           </div>
         </div>
       )}
     </div>
   );
+
 }

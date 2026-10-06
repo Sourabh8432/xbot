@@ -117,35 +117,53 @@ export function generateCardSvg({
 }
 
 /**
- * Render visual card to PNG file and return local path + public URL
+ * Render visual card to PNG file and return local path + embedded data URL + public URL
  */
 export async function createAndSaveCardImage(visualData) {
+  const svgString = generateCardSvg(visualData);
+  const svgDataUri = `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svgString)}`;
+  const filename = `card-${Date.now()}-${Math.floor(Math.random() * 1000)}.png`;
+  const localPath = path.join(MEDIA_DIR, filename);
+
   try {
-    const svgString = generateCardSvg(visualData);
     const resvg = new Resvg(svgString, {
       fitTo: { mode: 'width', value: 1200 }
     });
     const pngData = resvg.render();
     const pngBuffer = pngData.asPng();
 
-    const filename = `card-${Date.now()}-${Math.floor(Math.random() * 1000)}.png`;
-    const localPath = path.join(MEDIA_DIR, filename);
+    try {
+      fs.writeFileSync(localPath, pngBuffer);
+    } catch (writeErr) {
+      console.warn('Note: Local media directory not writable:', writeErr.message);
+    }
 
-    fs.writeFileSync(localPath, pngBuffer);
+    const pngBase64 = `data:image/png;base64,${pngBuffer.toString('base64')}`;
 
     return {
       success: true,
       filename,
       localPath,
-      publicUrl: `/api/media/${filename}`,
+      publicUrl: pngBase64, // Instant direct display without 404
+      dataUrl: pngBase64,
+      svgDataUri,
+      staticUrl: `/api/media/${filename}`,
       svg: svgString,
       buffer: pngBuffer
     };
   } catch (err) {
-    console.error('Error generating card image:', err);
+    console.warn('Resvg PNG rendering failed, falling back to SVG Data URI:', err.message);
     return {
-      success: false,
-      error: err.message
+      success: true,
+      filename: `${filename.replace('.png', '.svg')}`,
+      localPath,
+      publicUrl: svgDataUri,
+      dataUrl: svgDataUri,
+      svgDataUri,
+      staticUrl: `/api/media/${filename}`,
+      svg: svgString,
+      buffer: Buffer.from(svgString)
     };
   }
 }
+
