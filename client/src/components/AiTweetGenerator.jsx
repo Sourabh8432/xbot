@@ -8,43 +8,50 @@ import {
   Copy,
   Check,
   RefreshCw,
-  Hash,
-  Lightbulb,
-  Flame,
   Briefcase,
-  Smile,
-  Zap
+  TrendingUp,
+  Flame,
+  Image as ImageIcon,
+  Eye,
+  Download,
+  Lightbulb
 } from 'lucide-react';
 
 export function AiTweetGenerator() {
   const { showToast, fetchTweets } = useApp();
 
   const [topic, setTopic] = useState('');
-  const [tone, setTone] = useState('viral'); // viral, professional, casual, witty
+  const [category, setCategory] = useState('business_startups');
+  const [generateImage, setGenerateImage] = useState(true);
   const [isGenerating, setIsGenerating] = useState(false);
   const [result, setResult] = useState(null);
   const [isPublishing, setIsPublishing] = useState(false);
+  const [isQueueing, setIsQueueing] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [previewModal, setPreviewModal] = useState(false);
 
-  const samplePrompts = [
-    'Launching a new AI micro-SaaS in public',
-    'Why developer ergonomics matter more than raw speed',
-    '3 lessons scaling from 0 to 10k users on Twitter',
-    'Node.js vs Go for real-time WebSockets API bots'
+  const sampleIdeas = [
+    { label: 'Airbnb Photo Hack', query: 'How Airbnb used manual photography in NYC to escape bankruptcy in 2009' },
+    { label: 'Alex Hormozi Offer', query: 'Alex Hormozi 4 pillars of an irresistible Grand Slam offer and risk reversal' },
+    { label: 'Stripe 7-Line Code', query: 'How Stripe simplified 3-week payment integration into 7 lines of code' },
+    { label: 'Zerodha ₹0 Marketing', query: 'How Zerodha reached $3B valuation with zero paid ad budget' },
+    { label: 'Gymshark D2C Playbook', query: 'Ben Francis sewing vests to $1.4B empire via organic influencer gifting' },
+    { label: 'Apple iPod 5 Words', query: 'Steve Jobs 1,000 songs in your pocket transformation selling vs 5GB storage' }
   ];
 
-  const handleGenerate = async (selectedTopic = topic) => {
-    const finalTopic = selectedTopic || topic;
-    if (!finalTopic.trim()) {
-      showToast('Please enter a topic or select an idea prompt', 'error');
-      return;
-    }
-
+  const handleGenerate = async (customTopic = topic) => {
+    const finalTopic = customTopic || topic;
     try {
       setIsGenerating(true);
-      const res = await api.generateAiTweet({ topic: finalTopic, tone });
+      const res = await api.generateAiTweet({
+        topic: finalTopic.trim() || undefined,
+        category,
+        generateImage
+      });
+
       if (res.success) {
         setResult(res.result);
+        showToast('High-signal business tweet & infographic ready!', 'success');
       }
     } catch (err) {
       showToast(err.message, 'error');
@@ -59,8 +66,8 @@ export function AiTweetGenerator() {
     try {
       setIsPublishing(true);
       await api.postTweet(result.generatedText);
-      showToast('AI-generated tweet successfully published to X!', 'success');
-      await fetchTweets();
+      showToast('Tweet successfully published to X!', 'success');
+      if (fetchTweets) await fetchTweets();
     } catch (err) {
       showToast(err.message, 'error');
     } finally {
@@ -72,13 +79,19 @@ export function AiTweetGenerator() {
     if (!result?.generatedText) return;
 
     try {
+      setIsQueueing(true);
       await api.addBotQueue({
         text: result.generatedText,
-        scheduledFor: new Date(Date.now() + 3600000 * 2).toISOString()
+        topic: result.topic || 'Business Breakdown',
+        category: result.category || 'Startup Strategy',
+        media: result.media || null,
+        scheduledFor: new Date(Date.now() + 3600000 * 3).toISOString()
       });
-      showToast('Tweet added to Bot schedule (in 2 hours)!', 'success');
+      showToast('Post queued in Autonomous Bot schedule (in 3 hours)!', 'success');
     } catch (err) {
       showToast(err.message, 'error');
+    } finally {
+      setIsQueueing(false);
     }
   };
 
@@ -92,173 +105,179 @@ export function AiTweetGenerator() {
 
   return (
     <div className="space-y-6">
-      <div className="p-6 rounded-2xl glass-card border border-white/10 shadow-xl space-y-4">
+      {/* Studio Header Card */}
+      <div className="p-6 rounded-3xl glass-card border border-white/10 shadow-xl space-y-4">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-sky-500 to-indigo-600 flex items-center justify-center text-white shadow-lg shadow-sky-500/20">
+          <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-purple-500 to-indigo-600 flex items-center justify-center text-white shadow-lg shadow-purple-500/20">
             <Sparkles className="w-5 h-5" />
           </div>
           <div>
-            <h2 className="text-lg font-bold text-white">AI Content & Tweet Studio</h2>
+            <h2 className="text-base font-bold text-white">Viral Business & Startup Studio</h2>
             <p className="text-xs text-slate-400">
-              Generate viral posts, product hooks, and thread starters tailored for X algorithms.
+              Generates hook-driven founder case studies, offer teardowns, and matching visual infographics.
             </p>
           </div>
         </div>
 
-        {/* Preset Topic Ideas */}
-        <div>
-          <span className="text-xs font-semibold text-slate-400 block mb-2 flex items-center gap-1.5">
+        {/* 1-Click Inspiration Chips */}
+        <div className="space-y-2 pt-2">
+          <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400 flex items-center gap-1">
             <Lightbulb className="w-3.5 h-3.5 text-amber-400" />
-            Instant Prompt Ideas:
+            Viral Startup & Offer Case Studies:
           </span>
           <div className="flex flex-wrap gap-2">
-            {samplePrompts.map((p, i) => (
+            {sampleIdeas.map((idea, idx) => (
               <button
-                key={i}
+                key={idx}
                 onClick={() => {
-                  setTopic(p);
-                  handleGenerate(p);
+                  setTopic(idea.query);
+                  handleGenerate(idea.query);
                 }}
-                className="text-xs px-3 py-1.5 rounded-lg bg-white/5 hover:bg-white/10 text-slate-300 hover:text-white border border-white/5 transition text-left"
+                className="px-3 py-1.5 rounded-xl bg-white/5 hover:bg-sky-500/20 border border-white/10 hover:border-sky-500/30 text-slate-300 hover:text-sky-300 text-xs font-medium transition"
               >
-                {p}
+                {idea.label}
               </button>
             ))}
           </div>
         </div>
 
-        {/* Input & Options */}
-        <div className="space-y-4 pt-2">
-          <div>
-            <label className="block text-xs font-semibold text-slate-300 mb-1.5">
-              What topic or message would you like to tweet about?
-            </label>
+        {/* Input & Form */}
+        <div className="space-y-3 pt-2">
+          <div className="flex flex-col sm:flex-row gap-3">
             <input
               type="text"
+              placeholder="Enter custom business case study, company, or offer idea (or leave blank to auto-pick)..."
               value={topic}
               onChange={(e) => setTopic(e.target.value)}
-              placeholder="e.g. Announcing our new SaaS pricing update, or Tips for API rate limit optimization..."
-              className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-sky-500/60"
+              className="flex-1 px-4 py-2.5 rounded-xl bg-slate-900 border border-white/10 text-white placeholder-slate-500 focus:outline-none focus:border-purple-500 text-xs"
             />
+            <button
+              onClick={() => handleGenerate()}
+              disabled={isGenerating}
+              className="flex items-center justify-center gap-2 px-6 py-2.5 rounded-xl bg-gradient-to-r from-purple-600 to-indigo-600 hover:opacity-90 text-white font-bold text-xs shadow-lg shadow-purple-500/20 transition active:scale-95"
+            >
+              <RefreshCw className={`w-3.5 h-3.5 ${isGenerating ? 'animate-spin' : ''}`} />
+              <span>{isGenerating ? 'Generating...' : 'Generate Breakdown'}</span>
+            </button>
           </div>
 
-          {/* Tone Selector */}
-          <div>
-            <label className="block text-xs font-semibold text-slate-300 mb-2">
-              Select Tone / Style:
+          <div className="flex items-center gap-4 text-xs text-slate-400">
+            <label className="flex items-center gap-2 cursor-pointer">
+              <input
+                type="checkbox"
+                checked={generateImage}
+                onChange={(e) => setGenerateImage(e.target.checked)}
+                className="w-4 h-4 rounded text-purple-600 bg-slate-900 border-white/20"
+              />
+              <span className="text-slate-300">Auto-create matching Visual Infographic Card</span>
             </label>
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-              {[
-                { id: 'viral', label: 'Viral & Punchy', icon: Flame, color: 'text-rose-400' },
-                { id: 'professional', label: 'Professional / Tech', icon: Briefcase, color: 'text-sky-400' },
-                { id: 'casual', label: 'Casual & Relatable', icon: Smile, color: 'text-emerald-400' },
-                { id: 'witty', label: 'Witty & Humorous', icon: Zap, color: 'text-amber-400' }
-              ].map((t) => {
-                const Icon = t.icon;
-                return (
-                  <button
-                    key={t.id}
-                    onClick={() => setTone(t.id)}
-                    className={`flex items-center gap-2 px-3 py-2.5 rounded-xl border text-xs font-semibold transition ${
-                      tone === t.id
-                        ? 'bg-sky-500/20 text-white border-sky-500/50 shadow-sm'
-                        : 'bg-white/5 text-slate-400 hover:text-slate-200 border-white/5'
-                    }`}
-                  >
-                    <Icon className={`w-3.5 h-3.5 ${t.color}`} />
-                    <span>{t.label}</span>
-                  </button>
-                );
-              })}
-            </div>
           </div>
-
-          <button
-            onClick={() => handleGenerate()}
-            disabled={isGenerating || !topic.trim()}
-            className="w-full py-3 rounded-xl bg-gradient-to-r from-sky-500 via-indigo-600 to-purple-600 hover:opacity-95 disabled:opacity-50 text-white font-bold text-xs shadow-lg shadow-sky-500/20 flex items-center justify-center gap-2 transition"
-          >
-            {isGenerating ? (
-              <>
-                <RefreshCw className="w-4 h-4 animate-spin" />
-                <span>Crafting High-Signal Tweet...</span>
-              </>
-            ) : (
-              <>
-                <Sparkles className="w-4 h-4" />
-                <span>Generate Tweet with AI</span>
-              </>
-            )}
-          </button>
         </div>
       </div>
 
-      {/* Generated Result Preview Card */}
+      {/* Output Results Preview */}
       {result && (
-        <div className="p-6 rounded-2xl glass-card border border-sky-500/30 shadow-2xl space-y-4 animate-in fade-in zoom-in-95 duration-200">
-          <div className="flex items-center justify-between border-b border-white/10 pb-3">
-            <span className="text-xs font-bold text-sky-400 uppercase tracking-wider flex items-center gap-1.5">
-              <Sparkles className="w-3.5 h-3.5" />
-              Generated Tweet Preview
-            </span>
-            <div className="flex items-center gap-2 text-xs text-slate-400 font-mono">
-              <span>{result.characterCount} / 280 chars</span>
-              <span className="text-slate-600">•</span>
-              <span className="text-emerald-400 font-semibold uppercase">{result.tone}</span>
-            </div>
-          </div>
-
-          {/* Tweet Text */}
-          <div className="p-4 rounded-xl bg-black/60 border border-white/10 text-sm text-slate-100 font-normal leading-relaxed whitespace-pre-line">
-            {result.generatedText}
-          </div>
-
-          {/* Hashtag suggestions */}
-          {result.hashtags && (
-            <div className="flex items-center gap-1.5 flex-wrap">
-              <span className="text-[11px] text-slate-400 flex items-center gap-1">
-                <Hash className="w-3 h-3 text-sky-400" />
-                Suggested tags:
-              </span>
-              {result.hashtags.map((tag, i) => (
-                <span
-                  key={i}
-                  className="text-xs font-mono text-sky-400/90 bg-sky-500/10 px-2 py-0.5 rounded-md"
-                >
-                  {tag}
-                </span>
-              ))}
-            </div>
-          )}
-
-          {/* Action Buttons */}
-          <div className="flex items-center justify-between flex-wrap gap-2 pt-2 border-t border-white/5">
-            <button
-              onClick={handleCopy}
-              className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-white/5 hover:bg-white/10 text-slate-200 text-xs font-semibold transition"
-            >
-              {copied ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
-              <span>{copied ? 'Copied!' : 'Copy to Clipboard'}</span>
-            </button>
-
+        <div className="p-6 rounded-3xl glass-card border border-white/10 shadow-2xl space-y-6 animate-in fade-in duration-300">
+          <div className="flex items-center justify-between pb-3 border-b border-white/10">
             <div className="flex items-center gap-2">
-              <button
-                onClick={handleQueuePost}
-                className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-indigo-600/30 hover:bg-indigo-600/40 text-indigo-300 border border-indigo-500/30 text-xs font-semibold transition"
-              >
-                <Calendar className="w-3.5 h-3.5" />
-                <span>Queue in Bot</span>
-              </button>
-
-              <button
-                onClick={handlePublishNow}
-                disabled={isPublishing}
-                className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-sky-500 hover:bg-sky-400 disabled:opacity-50 text-white text-xs font-bold shadow-md shadow-sky-500/20 transition"
-              >
-                <Send className="w-3.5 h-3.5" />
-                <span>{isPublishing ? 'Publishing...' : 'Publish Immediately to X'}</span>
-              </button>
+              <span className="px-3 py-1 rounded-full bg-purple-500/20 text-purple-300 font-bold text-xs border border-purple-500/30">
+                {result.category || 'Startup Breakdown'}
+              </span>
+              <span className="text-xs text-slate-400 font-bold">{result.topic}</span>
             </div>
+            <span className="text-xs text-slate-500 font-mono">
+              Engine: {result.source || 'Curated Bank'}
+            </span>
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            {/* Left: Tweet Copy & Actions */}
+            <div className="space-y-4">
+              <div className="p-4 rounded-2xl bg-black/40 border border-white/5 space-y-3">
+                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Tweet Content (X Optimized)</span>
+                <p className="text-xs text-slate-100 whitespace-pre-wrap leading-relaxed font-sans">
+                  {result.generatedText}
+                </p>
+                <div className="flex items-center justify-between text-[11px] text-slate-500 pt-2 border-t border-white/5 font-mono">
+                  <span>Characters: {result.characterCount} / 280</span>
+                  <span className="text-emerald-400">✓ Safe Length</span>
+                </div>
+              </div>
+
+              {/* Action Buttons */}
+              <div className="flex flex-wrap gap-2.5">
+                <button
+                  onClick={handlePublishNow}
+                  disabled={isPublishing}
+                  className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-gradient-to-r from-sky-500 to-blue-600 hover:opacity-90 text-white font-bold text-xs shadow-md transition"
+                >
+                  <Send className={`w-3.5 h-3.5 ${isPublishing ? 'animate-spin' : ''}`} />
+                  <span>{isPublishing ? 'Publishing...' : 'Publish to X Live'}</span>
+                </button>
+
+                <button
+                  onClick={handleQueuePost}
+                  disabled={isQueueing}
+                  className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-purple-600/20 hover:bg-purple-600/30 border border-purple-500/30 text-purple-300 font-bold text-xs transition"
+                >
+                  <Calendar className="w-3.5 h-3.5" />
+                  <span>{isQueueing ? 'Queueing...' : 'Add to Bot Queue'}</span>
+                </button>
+
+                <button
+                  onClick={handleCopy}
+                  className="px-3.5 py-2.5 rounded-xl bg-white/5 hover:bg-white/10 text-slate-300 font-bold text-xs transition flex items-center gap-1.5"
+                >
+                  {copied ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
+                  <span>{copied ? 'Copied' : 'Copy'}</span>
+                </button>
+              </div>
+            </div>
+
+            {/* Right: Infographic Visual Preview */}
+            <div className="space-y-3">
+              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider flex items-center gap-1.5">
+                <ImageIcon className="w-3.5 h-3.5 text-sky-400" />
+                Attached Visual Infographic (High-Resolution Card)
+              </span>
+
+              {result.media?.publicUrl ? (
+                <div className="rounded-2xl overflow-hidden border border-white/10 bg-slate-950 shadow-xl group relative">
+                  <img
+                    src={result.media.publicUrl}
+                    alt="Visual Infographic Card"
+                    className="w-full h-auto object-cover cursor-pointer group-hover:scale-102 transition"
+                    onClick={() => setPreviewModal(true)}
+                  />
+                  <div className="p-3 bg-slate-900/90 border-t border-white/5 flex items-center justify-between text-xs">
+                    <span className="text-slate-400 text-[11px]">1200 x 675 Crisp PNG</span>
+                    <a
+                      href={result.media.publicUrl}
+                      download={result.media.filename}
+                      className="text-sky-400 hover:underline flex items-center gap-1 text-[11px] font-semibold"
+                    >
+                      <Download className="w-3 h-3" /> Download Card
+                    </a>
+                  </div>
+                </div>
+              ) : (
+                <div className="p-8 rounded-2xl bg-white/5 border border-white/5 text-center text-slate-500 text-xs">
+                  No visual card generated for this tweet.
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Fullscreen modal for preview */}
+      {previewModal && result?.media?.publicUrl && (
+        <div
+          className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in"
+          onClick={() => setPreviewModal(false)}
+        >
+          <div className="max-w-4xl max-h-[90vh] rounded-2xl overflow-hidden border border-white/20 shadow-2xl">
+            <img src={result.media.publicUrl} alt="Expanded preview" className="w-full h-auto" />
           </div>
         </div>
       )}

@@ -282,11 +282,34 @@ export async function fetchLiveUserMentions(userId, accessToken) {
   return response.data;
 }
 
-// Publish tweet (/2/tweets)
-export async function postLiveTweet(accessToken, text, replyToId = null) {
+// Upload media (image/png) to Twitter
+export async function uploadTwitterMedia(accessToken, imageBuffer, mimeType = 'image/png') {
+  try {
+    const formData = new FormData();
+    const blob = new Blob([imageBuffer], { type: mimeType });
+    formData.append('media', blob, 'card.png');
+
+    const response = await axios.post('https://upload.twitter.com/1.1/media/upload.json', formData, {
+      headers: {
+        Authorization: `Bearer ${accessToken}`
+      }
+    });
+
+    return response.data?.media_id_string || response.data?.media_id || null;
+  } catch (err) {
+    console.warn('Twitter media upload attempt:', err.response?.data || err.message);
+    return null;
+  }
+}
+
+// Publish tweet (/2/tweets) with optional media attachments
+export async function postLiveTweet(accessToken, text, replyToId = null, mediaIds = []) {
   const payload = { text };
   if (replyToId) {
     payload.reply = { in_reply_to_tweet_id: replyToId };
+  }
+  if (mediaIds && mediaIds.length > 0) {
+    payload.media = { media_ids: mediaIds };
   }
 
   const response = await axios.post('https://api.twitter.com/2/tweets', payload, {
@@ -298,3 +321,4 @@ export async function postLiveTweet(accessToken, text, replyToId = null) {
 
   return response.data;
 }
+

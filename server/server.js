@@ -7,6 +7,8 @@ import { config } from './config.js';
 import twitterRoutes from './routes/twitterRoutes.js';
 import botRoutes from './routes/botRoutes.js';
 
+import { startAutonomousScheduler } from './services/autonomousScheduler.js';
+
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
@@ -20,6 +22,14 @@ app.use(cors({
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
+// Serve static generated infographic media
+const mediaDir = path.join(__dirname, 'data/media');
+if (!fs.existsSync(mediaDir)) {
+  fs.mkdirSync(mediaDir, { recursive: true });
+}
+app.use('/api/media', express.static(mediaDir));
+app.use('/media', express.static(mediaDir));
+
 // API Routes (Mounted with and without /api prefix for flexible Vercel rewrite routing)
 app.use('/api/twitter', twitterRoutes);
 app.use('/twitter', twitterRoutes);
@@ -31,10 +41,14 @@ app.get(['/api/health', '/health'], (req, res) => {
   res.json({
     status: 'online',
     timestamp: new Date().toISOString(),
-    service: 'XBot SaaS Engine',
-    version: '1.0.0'
+    service: 'XBot Autonomous SaaS Engine',
+    version: '2.0.0'
   });
 });
+
+// Boot autonomous scheduler
+startAutonomousScheduler();
+
 
 // Serve frontend dist if exists (for standalone production preview)
 const clientDist = path.join(__dirname, '../client/dist');

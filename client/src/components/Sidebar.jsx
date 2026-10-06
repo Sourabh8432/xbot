@@ -30,16 +30,16 @@ export function Sidebar() {
     },
     {
       id: 'bot',
-      label: 'Bot Automation',
+      label: 'Autonomous Bot',
       icon: Bot,
-      badge: botStatus?.isActive ? 'Active' : 'Paused',
+      badge: botStatus?.isActive ? '24/7 Live' : 'Paused',
       badgeColor: botStatus?.isActive ? 'bg-emerald-500/20 text-emerald-400' : 'bg-amber-500/20 text-amber-400'
     },
     {
       id: 'ai',
-      label: 'AI Tweet Studio',
+      label: 'Viral Business Studio',
       icon: Sparkles,
-      badge: 'Gemini'
+      badge: 'Gemini 3.8'
     },
     {
       id: 'inspector',

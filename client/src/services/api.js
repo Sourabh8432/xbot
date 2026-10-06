@@ -61,6 +61,11 @@ export const api = {
   // Bot Automation endpoints
   getBotStatus: () => request('/bot/status'),
   toggleBot: () => request('/bot/toggle', { method: 'POST' }),
+  getBotSettings: () => request('/bot/settings'),
+  saveBotSettings: (settings) => request('/bot/settings', {
+    method: 'POST',
+    body: JSON.stringify(settings)
+  }),
   getBotRules: () => request('/bot/rules'),
   addBotRule: (rule) => request('/bot/rules', {
     method: 'POST',
@@ -80,6 +85,13 @@ export const api = {
   deleteBotQueue: (id) => request(`/bot/queue/${id}`, {
     method: 'DELETE'
   }),
+  publishQueuedNow: (id) => request(`/bot/publish-now/${id}`, {
+    method: 'POST'
+  }),
+  replenishQueue: () => request('/bot/replenish', {
+    method: 'POST'
+  }),
+  getPublishedHistory: () => request('/bot/published'),
   getBotLogs: () => request('/bot/logs'),
   clearBotLogs: () => request('/bot/logs/clear', { method: 'POST' }),
   generateAiTweet: (payload) => request('/bot/generate-ai', {
@@ -87,3 +99,4 @@ export const api = {
     body: JSON.stringify(payload)
   }),
 };
+

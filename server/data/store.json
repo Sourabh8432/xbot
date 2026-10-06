@@ -1,0 +1,190 @@
+{
+  "settings": {
+    "autoPilotEnabled": true,
+    "niche": "business_startups",
+    "tweetsPerDay": 3,
+    "includeImages": true,
+    "tone": "viral_storytelling",
+    "humanJitterMinutes": 20,
+    "geminiApiKey": "",
+    "activePostingWindows": [
+      {
+        "name": "Morning Insight",
+        "hour": 9,
+        "minute": 15
+      },
+      {
+        "name": "Afternoon Breakdown",
+        "hour": 14,
+        "minute": 30
+      },
+      {
+        "name": "Evening Offer/Case Study",
+        "hour": 20,
+        "minute": 45
+      }
+    ]
+  },
+  "session": {
+    "isLive": false,
+    "accessToken": null,
+    "refreshToken": null,
+    "clientId": null,
+    "clientSecret": null,
+    "user": null,
+    "rateLimit": null,
+    "updatedAt": null
+  },
+  "queue": [
+    {
+      "id": "auto-1791314907791-509",
+      "text": "In 2015, Notion almost ran out of money and was 1 week away from shutting down.\n\nIvan Zhao fired their team, moved to Kyoto with his co-founder, and rebuilt the app from scratch around one philosophy:\n\nLEGO blocks for workspace.\n\nThey allowed users to build and sell their own templates. A secondary economy of Notion creators formed, marketing the app for free.\n\nEmpower your users to make money with your tool, and they will never leave.\n\nBookmark this for your next business review. 📌",
+      "category": "Startup Breakdown",
+      "topic": "Notion",
+      "source": "curated_intelligence_bank",
+      "visualCard": {
+        "tag": "COMMUNITY FLYWHEEL",
+        "title": "Notion: Near Death to $10B Creator Flywheel",
+        "stat": "1 Week of Runway Remaining (2015)",
+        "highlight": "The Template Marketplace Ecosystem",
+        "keyLesson": "Turn your software into a platform where power users can build careers."
+      },
+      "media": {
+        "filename": "card-1791314907790-544.png",
+        "localPath": "D:\\Thessk\\XBot\\server\\data\\media\\card-1791314907790-544.png",
+        "publicUrl": "/api/media/card-1791314907790-544.png"
+      },
+      "scheduledFor": "2026-10-07T03:34:00.000Z",
+      "status": "scheduled",
+      "createdAt": "2026-10-06T19:28:27.791Z"
+    },
+    {
+      "id": "auto-1791314908213-208",
+      "text": "Ben Francis was sewing gym vests in his parents’ garage and delivering pizzas at night.\n\nHe sent free gear to fitness YouTubers with zero strings attached — just asking: \"If you like it, wear it.\"\n\nWhen they booked their first fitness expo booth in Birmingham, the crowd swarmed them so hard the entire hall halted.\n\nCommunity > Paid Facebook ads every single day.\n\nBookmark this for your next business review. 📌",
+      "category": "Startup Breakdown",
+      "topic": "Gymshark",
+      "source": "curated_intelligence_bank",
+      "visualCard": {
+        "tag": "D2C PLAYBOOK",
+        "title": "Gymshark: Pizza Delivery to $1.4B Empire",
+        "stat": "$0 to $1.4B via Organic Influencers",
+        "highlight": "Zero-strings-attached Gifting Hack",
+        "keyLesson": "Build genuine creator relationships before you pitch transactional deals."
+      },
+      "media": {
+        "filename": "card-1791314908213-785.png",
+        "localPath": "D:\\Thessk\\XBot\\server\\data\\media\\card-1791314908213-785.png",
+        "publicUrl": "/api/media/card-1791314908213-785.png"
+      },
+      "scheduledFor": "2026-10-07T09:03:00.000Z",
+      "status": "scheduled",
+      "createdAt": "2026-10-06T19:28:28.213Z"
+    },
+    {
+      "id": "auto-1791314908636-595",
+      "text": "In 2001, every MP3 player was marketed as \"5GB Hard Drive Storage\".\n\nSteve Jobs held up the iPod and said 5 words:\n\n\"1,000 songs in your pocket.\"\n\nCustomers don't care about your technical specs, your gigabytes, or your database stack.\n\nThey care about what your product makes possible in their daily life.\n\nSell the transformation, not the ingredients.\n\nBookmark this for your next business review. 📌",
+      "category": "Offer Breakdown",
+      "topic": "Apple",
+      "source": "curated_intelligence_bank",
+      "visualCard": {
+        "tag": "MARKETING PSYCHOLOGY",
+        "title": "Apple iPod: 5GB vs 1,000 Songs in Pocket",
+        "stat": "5 Words That Changed Consumer Tech",
+        "highlight": "Feature Selling vs Transformation Selling",
+        "keyLesson": "Translate technical features into immediate emotional imagery."
+      },
+      "media": {
+        "filename": "card-1791314908635-644.png",
+        "localPath": "D:\\Thessk\\XBot\\server\\data\\media\\card-1791314908635-644.png",
+        "publicUrl": "/api/media/card-1791314908635-644.png"
+      },
+      "scheduledFor": "2026-10-07T15:02:00.000Z",
+      "status": "scheduled",
+      "createdAt": "2026-10-06T19:28:28.636Z"
+    },
+    {
+      "id": "auto-1791314909048-435",
+      "text": "Duolingo doesn't compete with Rosetta Stone. It competes with TikTok and Instagram.\n\nLuis von Ahn realized language learning has a 90% drop-off rate.\n\nSo they turned learning into a mobile game: Streaks, leaderboards, unhinged mascot notifications, and loss aversion (you lose your streak if you miss a day).\n\nRetention is the mother of all growth loops.\n\nBookmark this for your next business review. 📌",
+      "category": "Startup Breakdown",
+      "topic": "Duolingo",
+      "source": "curated_intelligence_bank",
+      "visualCard": {
+        "tag": "RETENTION ARCHITECTURE",
+        "title": "Duolingo: The Unstoppable Streak Loop",
+        "stat": "Top App Store Grossing Edu App",
+        "highlight": "Loss Aversion & Mascot Gamification",
+        "keyLesson": "Compete for consumer attention using game mechanics, not dry lectures."
+      },
+      "media": {
+        "filename": "card-1791314909048-60.png",
+        "localPath": "D:\\Thessk\\XBot\\server\\data\\media\\card-1791314909048-60.png",
+        "publicUrl": "/api/media/card-1791314909048-60.png"
+      },
+      "scheduledFor": "2026-10-08T03:31:00.000Z",
+      "status": "scheduled",
+      "createdAt": "2026-10-06T19:28:29.048Z"
+    },
+    {
+      "id": "auto-1791314909474-327",
+      "text": "Ben Francis was sewing gym vests in his parents’ garage and delivering pizzas at night.\n\nHe sent free gear to fitness YouTubers with zero strings attached — just asking: \"If you like it, wear it.\"\n\nWhen they booked their first fitness expo booth in Birmingham, the crowd swarmed them so hard the entire hall halted.\n\nCommunity > Paid Facebook ads every single day.\n\nBookmark this for your next business review. 📌",
+      "category": "Startup Breakdown",
+      "topic": "Gymshark",
+      "source": "curated_intelligence_bank",
+      "visualCard": {
+        "tag": "D2C PLAYBOOK",
+        "title": "Gymshark: Pizza Delivery to $1.4B Empire",
+        "stat": "$0 to $1.4B via Organic Influencers",
+        "highlight": "Zero-strings-attached Gifting Hack",
+        "keyLesson": "Build genuine creator relationships before you pitch transactional deals."
+      },
+      "media": {
+        "filename": "card-1791314909473-643.png",
+        "localPath": "D:\\Thessk\\XBot\\server\\data\\media\\card-1791314909473-643.png",
+        "publicUrl": "/api/media/card-1791314909473-643.png"
+      },
+      "scheduledFor": "2026-10-08T08:54:00.000Z",
+      "status": "scheduled",
+      "createdAt": "2026-10-06T19:28:29.474Z"
+    },
+    {
+      "id": "auto-1791314909909-723",
+      "text": "In 2011, accepting payments online took 9 forms, 3 weeks, and a bank approval.\n\nStripe condensed all of it into 7 lines of JavaScript.\n\nInstead of saying \"Check out our beta\", Patrick Collison would grab the founder’s laptop and say:\n\n\"Give me your computer, I’ll install it right now.\" (The Collison Installation).\n\nFriction is the #1 killer of SaaS conversion.\n\nBookmark this for your next business review. 📌",
+      "category": "Startup Breakdown",
+      "topic": "Stripe",
+      "source": "curated_intelligence_bank",
+      "visualCard": {
+        "tag": "PRODUCT-LED GROWTH",
+        "title": "Stripe: The 7-Line Code Disruption",
+        "stat": "3 Weeks → 7 Lines of Code",
+        "highlight": "The \"Collison Installation\" Strategy",
+        "keyLesson": "Remove every millisecond of friction between sign-up and value."
+      },
+      "media": {
+        "filename": "card-1791314909909-74.png",
+        "localPath": "D:\\Thessk\\XBot\\server\\data\\media\\card-1791314909909-74.png",
+        "publicUrl": "/api/media/card-1791314909909-74.png"
+      },
+      "scheduledFor": "2026-10-08T14:55:00.000Z",
+      "status": "scheduled",
+      "createdAt": "2026-10-06T19:28:29.909Z"
+    }
+  ],
+  "published": [],
+  "rules": [],
+  "logs": [
+    {
+      "id": "log-1791314909910-720",
+      "timestamp": "2026-10-06T19:28:29.910Z",
+      "type": "SUCCESS",
+      "title": "Queue Replenished",
+      "details": "Autonomous queue buffer now has 6 curated posts ready."
+    },
+    {
+      "id": "log-1791314907361-468",
+      "timestamp": "2026-10-06T19:28:27.361Z",
+      "type": "INFO",
+      "title": "Auto-Pilot Planning",
+      "details": "Generating 6 high-signal business tweets & infographics to replenish queue."
+    }
+  ]
+}

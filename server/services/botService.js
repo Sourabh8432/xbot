@@ -1,57 +1,44 @@
-// In-memory bot state (clean, no dummy data)
+import { db } from './db.js';
+
+// In-memory bot state compatibility layer redirecting to db
 export const botState = {
-  isActive: true,
-  lastPollTime: new Date().toISOString(),
-  rules: [],
-  queue: [],
-  logs: []
+  get isActive() {
+    return db.getSettings().autoPilotEnabled;
+  },
+  set isActive(val) {
+    db.updateSettings({ autoPilotEnabled: !!val });
+  },
+  get lastPollTime() {
+    return new Date().toISOString();
+  },
+  get rules() {
+    return db.getRules();
+  },
+  set rules(val) {
+    db.setRules(val);
+  },
+  get queue() {
+    return db.getQueue();
+  },
+  set queue(val) {
+    db.setQueue(val);
+  },
+  get logs() {
+    return db.getLogs();
+  }
 };
 
-// Add a log entry
+// Add a log entry (persists to DB)
 export function addBotLog(type, title, details) {
-  botState.logs.unshift({
-    id: `log-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
-    timestamp: new Date().toISOString(),
-    type,
-    title,
-    details
-  });
-  if (botState.logs.length > 100) {
-    botState.logs.pop();
-  }
+  db.addLog(type, title, details);
 }
 
-// AI Content Generation helper
-export function generateAiTweetContent({ topic, tone = 'viral', format = 'single' }) {
-  const templates = {
-    viral: [
-      `Most founders overcomplicate ${topic}.\n\nHere is the exact playbook to master it in 3 steps:\n\n1. Start with the core problem\n2. Automate the feedback loop\n3. Iterate in public\n\nWhat's your #1 rule? 👇`,
-      `Stop handling ${topic} manually in 2026.\n\nThe game has shifted towards agentic workflows and real-time APIs.\n\nHere is how to 10x your velocity: 🧵⚡`,
-      `Unpopular opinion about ${topic}:\n\nYou don't need a huge team. You need tight feedback loops, clear docs, and reliable automation. 💡`
-    ],
-    professional: [
-      `We're excited to announce major improvements regarding ${topic}.\n\nKey highlights:\n• Enhanced API reliability\n• Sub-second synchronization\n• Enterprise-grade security\n\nRead our full breakdown: https://x.com 📈`,
-      `Effective management of ${topic} requires balancing scalability with developer ergonomics. Today we are releasing our latest benchmarks and best practices. 🔬`
-    ],
-    casual: [
-      `Late night thought on ${topic}... The simpler you keep the architecture, the fewer 2 AM alerts you get. Who else agrees? ☕😅`,
-      `Spending the weekend optimizing ${topic}. There is something deeply satisfying about watching latency drop. 🚀`
-    ],
-    witty: [
-      `They said "${topic}" would take 3 months.\n\nBuilt it in a weekend with modern APIs and excessive coffee intake. ☕🤖`,
-      `99 problems and ${topic} was all 99 of them until we automated the pipeline. 😂🚀`
-    ]
-  };
-
-  const pool = templates[tone] || templates.viral;
-  const selected = pool[Math.floor(Math.random() * pool.length)];
-
+// AI Content Generation helper fallback
+export function generateAiTweetContent({ topic = 'startup growth', tone = 'viral' } = {}) {
   return {
     topic,
     tone,
-    format,
-    generatedText: selected,
-    hashtags: [`#${topic.replace(/\s+/g, '')}`, '#XBot', '#BuildInPublic'],
-    characterCount: selected.length
+    generatedText: `Most founders overcomplicate ${topic}.\n\nFocus on 1 core offer, 1 acquisition channel, and relentless retention.\n\nSimplicity scales, complexity stalls. 💡`,
+    characterCount: 130
   };
 }

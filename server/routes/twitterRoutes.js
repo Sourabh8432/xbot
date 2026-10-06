@@ -11,6 +11,7 @@ import {
 import { addBotLog } from '../services/botService.js';
 import { runtimeConfig } from '../config.js';
 import { encryptPayload, decryptPayload } from '../services/security.js';
+import { db } from '../services/db.js';
 
 const router = express.Router();
 
@@ -23,7 +24,7 @@ let memorySession = {
   rateLimit: null
 };
 
-// Helper to extract token & session from request (Header > Cookie > Memory)
+// Helper to extract token & session from request (Header > Cookie > Memory > DB)
 function getRequestSession(req) {
   // 1. Authorization header (Bearer token)
   const authHeader = req.headers.authorization;
@@ -54,8 +55,15 @@ function getRequestSession(req) {
     return memorySession;
   }
 
+  // 4. Persistent DB session fallback
+  const dbSession = db.getSession();
+  if (dbSession && dbSession.accessToken) {
+    return dbSession;
+  }
+
   return null;
 }
+
 
 // Return the currently active account details
 router.get('/account', async (req, res) => {
@@ -256,8 +264,9 @@ router.get('/auth/callback', async (req, res) => {
     };
     const sessionToken = encryptPayload(sessionData);
 
-    // Update memory fallback
+    // Update memory fallback and persistent DB
     memorySession = sessionData;
+    db.updateSession(sessionData);
 
     addBotLog('SUCCESS', 'X Account Connected', `Connected live account @${userProfile.user.username} via OAuth 2.0 PKCE`);
 
@@ -299,6 +308,7 @@ router.post('/connect-token', async (req, res) => {
     const sessionToken = encryptPayload(sessionData);
 
     memorySession = sessionData;
+    db.updateSession(sessionData);
 
     addBotLog('SUCCESS', 'Live Account Connected', `Connected live account @${userProfile.user.username} via Direct Token`);
 
@@ -367,12 +377,20 @@ router.post('/disconnect', (req, res) => {
     user: null,
     rateLimit: null
   };
+  db.updateSession({
+    isLive: false,
+    accessToken: null,
+    refreshToken: null,
+    user: null,
+    rateLimit: null
+  });
 
   res.clearCookie('xbot_session', { path: '/' });
   addBotLog('INFO', 'Account Disconnected', 'Disconnected X account from dashboard.');
 
   res.json({ success: true, message: 'Account disconnected successfully.' });
 });
+
 
 // Post a tweet to X
 router.post('/tweet', async (req, res) => {

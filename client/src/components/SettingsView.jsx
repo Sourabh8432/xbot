@@ -26,6 +26,8 @@ export function SettingsView() {
   const [copiedCallback, setCopiedCallback] = useState(false);
   const [status, setStatus] = useState(null);
 
+  const [geminiKey, setGeminiKey] = useState('');
+
   useEffect(() => {
     if (typeof localStorage !== 'undefined') {
       const savedId = localStorage.getItem('xbot_client_id');
@@ -34,6 +36,9 @@ export function SettingsView() {
       if (savedSecret) setClientSecret(savedSecret);
     }
     api.getCredentialsStatus().then((s) => setStatus(s)).catch(() => {});
+    api.getBotSettings().then((res) => {
+      if (res?.settings?.geminiApiKey) setGeminiKey(res.settings.geminiApiKey);
+    }).catch(() => {});
   }, []);
 
   const handleSave = async (e) => {
@@ -48,21 +53,26 @@ export function SettingsView() {
         if (cleanSecret) localStorage.setItem('xbot_client_secret', cleanSecret);
       }
 
-      const res = await api.saveCredentials({
-        clientId: cleanId,
-        clientSecret: cleanSecret,
-        redirectUri: redirectUri.trim()
-      });
-      if (res.success) {
-        showToast('API credentials saved successfully!', 'success');
-        const s = await api.getCredentialsStatus();
-        setStatus(s);
-      }
+      await Promise.all([
+        api.saveCredentials({
+          clientId: cleanId,
+          clientSecret: cleanSecret,
+          redirectUri: redirectUri.trim()
+        }),
+        api.saveBotSettings({
+          geminiApiKey: geminiKey.trim()
+        })
+      ]);
+
+      showToast('All credentials and Gemini API Key saved successfully!', 'success');
+      const s = await api.getCredentialsStatus();
+      setStatus(s);
     } catch (err) {
       showToast(err.message, 'error');
     } finally {
       setIsSaving(false);
     }
+
   };
 
   const copyCallback = () => {
@@ -146,14 +156,32 @@ export function SettingsView() {
               </div>
             </div>
 
+            <div>
+              <label className="block font-semibold text-slate-300 mb-1">
+                Google Gemini API Key (For Autonomous AI Viral Research)
+              </label>
+              <input
+                type="password"
+                value={geminiKey}
+                onChange={(e) => setGeminiKey(e.target.value)}
+                placeholder="AIzaSy... (Leave blank to use curated 50+ startup case studies)"
+                className="w-full bg-white/5 border border-white/10 rounded-xl px-3.5 py-2.5 text-white placeholder-slate-500 focus:outline-none focus:border-purple-500/60 font-mono text-xs"
+              />
+              <p className="text-[10px] text-slate-500 mt-1">
+                Powers real-time business research and viral breakdown generation via Gemini 3.8 Flash.
+              </p>
+            </div>
+
+
             <button
               type="submit"
               disabled={isSaving}
-              className="w-full py-2.5 rounded-xl bg-sky-500 hover:bg-sky-400 text-white font-bold text-xs shadow-lg shadow-sky-500/20 flex items-center justify-center gap-2 transition"
+              className="w-full py-2.5 rounded-xl bg-gradient-to-r from-sky-500 to-indigo-600 hover:opacity-90 text-white font-bold text-xs shadow-lg shadow-sky-500/20 flex items-center justify-center gap-2 transition"
             >
               <Save className="w-3.5 h-3.5" />
-              <span>{isSaving ? 'Saving...' : 'Save Credentials'}</span>
+              <span>{isSaving ? 'Saving...' : 'Save All Credentials'}</span>
             </button>
+
           </form>
         </div>
 
