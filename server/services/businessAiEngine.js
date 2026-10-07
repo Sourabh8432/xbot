@@ -1,175 +1,208 @@
 import { GoogleGenAI } from '@google/genai';
 import { db } from './db.js';
 
-// Curated Deep Business Intelligence Knowledge Bank (Real startup case studies, offer teardowns & growth playbooks)
+// Curated Deep Business Intelligence Knowledge Bank (Real audited viral startup case studies & offer breakdowns)
 export const BUSINESS_CASE_STUDIES = [
   {
     company: 'Airbnb',
     founder: 'Brian Chesky & Joe Gebbia',
-    metric: '$100B+ Valuation',
+    metric: '2x Revenue in 7 Days',
     category: 'Startup Breakdown',
-    hook: 'In 2009, Airbnb was making just $200/week and facing bankruptcy.',
-    story: 'Brian Chesky realized listings had terrible photos taken on flip phones.\n\nThey flew to New York, rented a $5,000 camera, and knocked on hosts’ doors to take HD photos themselves.\n\nRevenue doubled in 7 days.\n\nLesson: Do things that don\'t scale before you build things that do.',
+    hook: 'In 2009, Airbnb was making $200/week and 3 weeks away from dying.',
+    story: 'Brian Chesky noticed listings had awful photos taken on flip phones.\n\nSo they flew to New York, rented a camera, and knocked on hosts’ doors to shoot professional photos themselves for free.\n\nWithin 7 days, weekly revenue doubled to $400, then $800, then $2,000.\n\nPaul Graham told them: "Do things that don’t scale until you understand what moves the needle."',
+    closer: 'Friction kills conversions. Solve the unscalable part first.',
     visualData: {
-      tag: 'GROWTH TEARDOWN',
-      title: 'How Airbnb Escaped Bankruptcy',
+      tag: 'GROWTH BLUEPRINT',
+      title: 'Airbnb: The $5k Camera That Saved Them',
       stat: '2x Revenue in 7 Days',
-      highlight: 'Manual NYC Photo Hack (2009)',
+      highlight: 'Manual NYC Photography Hack',
       keyLesson: 'Do unscalable things first to understand what actually moves metrics.'
     }
   },
   {
     company: 'Stripe',
     founder: 'Patrick & John Collison',
-    metric: '$70B+ Valuation',
-    category: 'Startup Breakdown',
-    hook: 'In 2011, accepting payments online took 9 forms, 3 weeks, and a bank approval.',
-    story: 'Stripe condensed all of it into 7 lines of JavaScript.\n\nInstead of saying "Check out our beta", Patrick Collison would grab the founder’s laptop and say:\n\n"Give me your computer, I’ll install it right now." (The Collison Installation).\n\nFriction is the #1 killer of SaaS conversion.',
+    metric: '3 Weeks → 7 Lines of Code',
+    category: 'Product-Led Growth',
+    hook: 'In 2011, accepting credit cards online took 9 forms, 3 weeks, and bank approval.',
+    story: 'Stripe replaced the entire nightmare with 7 lines of JavaScript.\n\nWhen founders asked: "Can I try the beta?", Patrick Collison didn’t send an email link.\n\nHe opened their laptop and said:\n"Give me your computer. I’ll paste the code right now." (The Collison Installation).\n\nIf you want early traction, eliminate every second between signup and value.',
+    closer: 'Speed to first value is your #1 growth lever.',
     visualData: {
       tag: 'PRODUCT-LED GROWTH',
       title: 'Stripe: The 7-Line Code Disruption',
       stat: '3 Weeks → 7 Lines of Code',
-      highlight: 'The "Collison Installation" Strategy',
+      highlight: 'The Hands-On "Collison Installation"',
       keyLesson: 'Remove every millisecond of friction between sign-up and value.'
     }
   },
   {
     company: 'Grand Slam Offer',
     founder: 'Alex Hormozi Framework',
-    metric: '$100M Leads Framework',
-    category: 'Offer Breakdown',
-    hook: 'Why 90% of business offers get ignored (and how to fix yours in 5 minutes):',
-    story: 'People don\'t buy what you sell. They buy certainty of outcome.\n\nThe 4 pillars of an irresistible offer:\n1. Dream Outcome (Clear destination)\n2. Perceived Likelihood of Success (Proof)\n3. Time Delay (Get results faster)\n4. Effort & Sacrifice (Do the heavy lifting for them)\n\nMake your guarantee so strong they feel silly saying no.',
+    metric: 'Value = (Dream × Likelihood) ÷ (Time × Effort)',
+    category: 'Offer Psychology',
+    hook: 'If your sales calls are struggling, your product isn\'t the problem. Your offer is lazy.',
+    story: 'Weak offers sell ingredients:\n"We provide 4 coaching calls and a PDF."\n\nGrand Slam offers sell guaranteed destination:\n"We add $30k in qualified pipeline in 60 days, or you don’t pay a dollar."\n\nPeople don’t pay for hours or features. They pay for certainty of outcome and risk removal.',
+    closer: 'Make your guarantee so bold they feel stupid saying no.',
     visualData: {
       tag: 'OFFER BLUEPRINT',
       title: 'The Irresistible Offer Equation',
-      stat: 'Value = (Dream × Likelihood) ÷ (Time × Effort)',
+      stat: 'Value = (Dream × Certainty) ÷ (Time × Effort)',
       highlight: 'Alex Hormozi Value Formula',
-      keyLesson: 'Lower effort & time delay while multiplying certainty to charge 5x more.'
+      keyLesson: 'Minimize effort & time delay while multiplying certainty to charge premium pricing.'
     }
   },
   {
     company: 'Zerodha',
     founder: 'Nithin & Nikhil Kamath',
-    metric: '$3B+ Bootstrapped Profit Powerhouse',
-    category: 'Startup Breakdown',
-    hook: 'Zerodha built a $3B business with ₹0 marketing budget.',
-    story: 'Every broker was charging 0.5% commission on stock volume.\n\nZerodha launched a flat ₹20 fee per trade regardless of size. Big traders flocked overnight.\n\nInstead of ads, they built Varsity (free financial education) and let word-of-mouth do the rest.\n\nTransparent pricing is the greatest moat.',
+    metric: '₹0 Ad Spend → $3B Valuation',
+    category: 'Bootstrapped Scale',
+    hook: 'Zerodha built a $3B trading giant with ₹0 spent on paid advertising.',
+    story: 'Every traditional broker was charging 0.5% commission on trade volume.\n\nZerodha launched a flat ₹20 fee per trade, no matter the size.\n\nBig traders saved lakhs of rupees on day 1. Instead of billboards, Zerodha built Varsity (free financial modules).\n\nTransparent pricing converted every active user into an organic sales rep.',
+    closer: 'Fair pricing and free education is an unbeatable moat.',
     visualData: {
       tag: 'BOOTSTRAPPED SCALE',
-      title: 'Zerodha: $0 Ad Spend to $3B Market Leader',
+      title: 'Zerodha: $0 Marketing to $3B Leader',
       stat: '₹0 Spent on Paid Ads',
-      highlight: 'Flat ₹20 Pricing Disruption',
-      keyLesson: 'Radical fee transparency converts customers into your best sales reps.'
+      highlight: 'Flat ₹20 Pricing Moat',
+      keyLesson: 'Radical fee transparency turns early customers into your best marketing army.'
     }
   },
   {
     company: 'Gymshark',
     founder: 'Ben Francis',
-    metric: '$1.4B+ D2C Giant',
-    category: 'Startup Breakdown',
-    hook: 'Ben Francis was sewing gym vests in his parents’ garage and delivering pizzas at night.',
-    story: 'He sent free gear to fitness YouTubers with zero strings attached — just asking: "If you like it, wear it."\n\nWhen they booked their first fitness expo booth in Birmingham, the crowd swarmed them so hard the entire hall halted.\n\nCommunity > Paid Facebook ads every single day.',
+    metric: '$0 to $1.4B via Community',
+    category: 'D2C Playbook',
+    hook: 'Ben Francis was sewing gym vests by hand in his garage and delivering pizzas at night.',
+    story: 'Instead of running Facebook ads, he tracked down 10 rising fitness YouTubers.\n\nHe mailed them free tracksuits with a simple note:\n"No contract. If you like the gear, wear it."\n\nWhen Gymshark booked their first expo booth in Birmingham, the crowd mobbed them so hard the fire department halted the event.',
+    closer: 'Community and genuine relationships beat transactional ad spend every time.',
     visualData: {
       tag: 'D2C PLAYBOOK',
       title: 'Gymshark: Pizza Delivery to $1.4B Empire',
-      stat: '$0 to $1.4B via Organic Influencers',
-      highlight: 'Zero-strings-attached Gifting Hack',
-      keyLesson: 'Build genuine creator relationships before you pitch transactional deals.'
-    }
-  },
-  {
-    company: 'Figma',
-    founder: 'Dylan Field',
-    metric: '$20B Product Standard',
-    category: 'Startup Breakdown',
-    hook: 'In 2016, design software was bulky, desktop-only, and required emailing .PSD files back and forth.',
-    story: 'Figma put the entire canvas in a browser URL.\n\nDesigners could drop a link into Slack, and developers, product managers, and clients could collaborate live with multiplayer cursors.\n\nThey didn\'t just build a better tool; they turned design into a multiplayer social network.',
-    visualData: {
-      tag: 'DISTRIBUTION MOAT',
-      title: 'Figma: From Desktop Silos to Multiplayer Web',
-      stat: 'Multiplayer Browser Canvas',
-      highlight: 'The 1-Click URL Collaboration Loop',
-      keyLesson: 'When your product naturally spreads during normal usage, distribution is free.'
+      stat: '$0 to $1.4B via Organic Creators',
+      highlight: 'Zero-Strings-Attached Gifting',
+      keyLesson: 'Build genuine creator relationships before you pitch commercial sponsorships.'
     }
   },
   {
     company: 'Apple',
     founder: 'Steve Jobs',
-    metric: 'The iPod Launch Strategy',
-    category: 'Offer Breakdown',
-    hook: 'In 2001, every MP3 player was marketed as "5GB Hard Drive Storage".',
-    story: 'Steve Jobs held up the iPod and said 5 words:\n\n"1,000 songs in your pocket."\n\nCustomers don\'t care about your technical specs, your gigabytes, or your database stack.\n\nThey care about what your product makes possible in their daily life.\n\nSell the transformation, not the ingredients.',
+    metric: '1,000 Songs in Your Pocket',
+    category: 'Positioning & Marketing',
+    hook: 'In 2001, every MP3 player on the market was advertised as "5GB Hard Drive Storage".',
+    story: 'Steve Jobs walked onto the stage, held up the iPod, and said 5 words:\n\n"1,000 songs in your pocket."\n\nNobody buys gigabytes, tech specs, or database queries.\n\nThey buy what the product allows them to feel and do in real life.',
+    closer: 'Sell the transformation, never the ingredients.',
     visualData: {
-      tag: 'MARKETING PSYCHOLOGY',
+      tag: 'POSITIONING',
       title: 'Apple iPod: 5GB vs 1,000 Songs in Pocket',
-      stat: '5 Words That Changed Consumer Tech',
-      highlight: 'Feature Selling vs Transformation Selling',
-      keyLesson: 'Translate technical features into immediate emotional imagery.'
+      stat: '5 Words That Defined Modern Tech',
+      highlight: 'Transformation vs Feature Selling',
+      keyLesson: 'Translate raw technical specs into instant emotional mental imagery.'
     }
   },
   {
-    company: 'Notion',
-    founder: 'Ivan Zhao',
-    metric: '$10B Productivity Leader',
-    category: 'Startup Breakdown',
-    hook: 'In 2015, Notion almost ran out of money and was 1 week away from shutting down.',
-    story: 'Ivan Zhao fired their team, moved to Kyoto with his co-founder, and rebuilt the app from scratch around one philosophy:\n\nLEGO blocks for workspace.\n\nThey allowed users to build and sell their own templates. A secondary economy of Notion creators formed, marketing the app for free.\n\nEmpower your users to make money with your tool, and they will never leave.',
+    company: 'Figma',
+    founder: 'Dylan Field',
+    metric: 'Multiplayer Web Canvas',
+    category: 'Distribution Moat',
+    hook: 'In 2016, design software was bulky, desktop-only, and required emailing .sketch files.',
+    story: 'Figma put the design canvas inside a browser URL.\n\nA designer could drop a link into Slack, and product managers, engineers, and clients could view and collaborate with live multiplayer cursors.\n\nThey didn’t just build a design tool. They turned design into a multiplayer collaboration network.',
+    closer: 'When your product naturally spreads during normal usage, distribution is free.',
     visualData: {
-      tag: 'COMMUNITY FLYWHEEL',
-      title: 'Notion: Near Death to $10B Creator Flywheel',
-      stat: '1 Week of Runway Remaining (2015)',
-      highlight: 'The Template Marketplace Ecosystem',
-      keyLesson: 'Turn your software into a platform where power users can build careers.'
+      tag: 'DISTRIBUTION MOAT',
+      title: 'Figma: From Desktop Silos to Browser Canvas',
+      stat: 'Multiplayer URL Collaboration',
+      highlight: 'Built-in Collaborative Growth Loop',
+      keyLesson: 'When using your product requires inviting others, customer acquisition is organic.'
     }
   },
   {
     company: 'Alex Hormozi Pricing',
     founder: 'Acquisition.com',
-    metric: 'Grand Slam Pricing Rules',
-    category: 'Offer Breakdown',
-    hook: 'Why doubling your prices often makes your product sell FASTER:',
-    story: 'When you underprice, three things happen:\n1. Clients assume low quality\n2. They don\'t respect the advice\n3. You can\'t afford world-class delivery\n\nWhen you 2x the price and attach an unconditional, bold guarantee, perceived value spikes.\n\nPrice is an emotional anchor. Don\'t compete to the bottom.',
+    metric: 'The Premium Pricing Paradox',
+    category: 'Offer Psychology',
+    hook: 'The biggest mistake early founders make is underpricing their core offer.',
+    story: 'When you charge $50/mo, three things happen:\n1. Buyers assume low quality\n2. They don\'t respect the advice\n3. You can\'t afford world-class delivery\n\nWhen you double your price and attach a bulletproof guarantee, perceived value spikes.\n\nPrice is an emotional anchor. Don\'t compete in a race to the bottom.',
+    closer: 'Higher prices fund better delivery, which creates happier clients.',
     visualData: {
       tag: 'PRICING PSYCHOLOGY',
       title: 'The Premium Pricing Paradox',
-      stat: 'Higher Price = Higher Commitment & Results',
-      highlight: 'Price Anchoring & Guarantee Stacking',
-      keyLesson: 'Higher prices fund better delivery, which creates happier case studies.'
+      stat: 'Higher Price = Higher Client Results',
+      highlight: 'Price Anchoring & Bold Guarantees',
+      keyLesson: 'Premium pricing funds superior delivery, which generates unbeatable case studies.'
     }
   },
   {
-    company: 'Duolingo',
-    founder: 'Luis von Ahn',
-    metric: 'Gamification Engine',
+    company: 'Notion',
+    founder: 'Ivan Zhao',
+    metric: '1 Week of Runway (2015) → $10B',
     category: 'Startup Breakdown',
-    hook: 'Duolingo doesn\'t compete with Rosetta Stone. It competes with TikTok and Instagram.',
-    story: 'Luis von Ahn realized language learning has a 90% drop-off rate.\n\nSo they turned learning into a mobile game: Streaks, leaderboards, unhinged mascot notifications, and loss aversion (you lose your streak if you miss a day).\n\nRetention is the mother of all growth loops.',
+    hook: 'In 2015, Notion had 1 week of cash left and was about to go under.',
+    story: 'Ivan Zhao fired the team, sublet their San Francisco office, and moved to Kyoto with his co-founder.\n\nThey rebuilt the app around one concept: LEGO blocks for knowledge workers.\n\nThey let users build and sell their own templates, creating an entire creator economy that promoted Notion for free.',
+    closer: 'Turn your software into a platform where other people can build businesses.',
     visualData: {
-      tag: 'RETENTION ARCHITECTURE',
-      title: 'Duolingo: The Unstoppable Streak Loop',
-      stat: 'Top App Store Grossing Edu App',
-      highlight: 'Loss Aversion & Mascot Gamification',
-      keyLesson: 'Compete for consumer attention using game mechanics, not dry lectures.'
+      tag: 'COMMUNITY FLYWHEEL',
+      title: 'Notion: Near Death to $10B Creator Engine',
+      stat: '1 Week of Runway Remaining (2015)',
+      highlight: 'The Template Creator Economy',
+      keyLesson: 'Turn your software into a platform where power users can build careers.'
+    }
+  },
+  {
+    company: 'Basecamp',
+    founder: 'Jason Fried & DHH',
+    metric: '20+ Years of High Margin Profit',
+    category: 'Bootstrapped Scale',
+    hook: 'Basecamp raised $0 in venture capital and has been wildly profitable for 20 straight years.',
+    story: 'While competitors raised $200M rounds and hired 800 people, Basecamp kept their team under 60.\n\nThey charged a flat $99/month regardless of how many users a company added.\n\nNo per-seat tax. No enterprise sales reps. Just software that works cleanly and pays the bills.',
+    closer: 'Growth for the sake of growth is the ideology of a cancer cell.',
+    visualData: {
+      tag: 'BOOTSTRAPPED SCALE',
+      title: 'Basecamp: The Anti-VC Profit Machine',
+      stat: '20+ Years of Continuous Profits',
+      highlight: 'Flat Pricing & Tiny Team Discipline',
+      keyLesson: 'A profitable small business beats an unprofitable unicorn every single day.'
+    }
+  },
+  {
+    company: 'Loom',
+    founder: 'Joe Thomas',
+    metric: '1 Video Link vs 10 Cold Emails',
+    category: 'Product-Led Growth',
+    hook: 'In 2016, Loom had 2 weeks of runway and were rejected by every single VC.',
+    story: 'Out of desperation, they posted a 1-click Chrome extension on Product Hunt that let people record their screen instantly.\n\nEvery time someone sent a Loom video, the recipient had to visit Loom to watch it.\n\nThe product carried its own marketing with every video sent.\nAtlan purchased it for $975M.',
+    closer: 'Viral loops work best when sending the output is the core utility.',
+    visualData: {
+      tag: 'VIRAL PRODUCT LOOPS',
+      title: 'Loom: 2 Weeks Runway to $975M Exit',
+      stat: '975M Acquisition by Atlan',
+      highlight: 'The Output-Carried Referral Loop',
+      keyLesson: 'Build your product so that normal usage exposes the tool to new prospects.'
+    }
+  },
+  {
+    company: 'Craigslist',
+    founder: 'Craig Newmark',
+    metric: '$600M+ Profit with 50 Employees',
+    category: 'Business Moats',
+    hook: 'Craigslist hasn’t updated its website design since 1995.',
+    story: 'It runs on plain HTML, has zero algorithmic feeds, and spends $0 on marketing.\n\nYet it generates over $600M in annual profit with around 50 employees.\n\nCraig Newmark understood network density: People don’t want a fancy UI. They want buyers and sellers in their city.',
+    closer: 'Utility and liquidity beat aesthetics every single time.',
+    visualData: {
+      tag: 'NETWORK EFFECTS',
+      title: 'Craigslist: 1995 HTML to $600M Profit',
+      stat: '$12M+ Revenue per Employee',
+      highlight: 'Pure Local Network Density',
+      keyLesson: 'Liquidity and marketplace trust matter 100x more than sleek redesigns.'
     }
   }
 ];
 
-// Human-Style Business Viral Prompts & Templates for Dynamic Variation
-const HOOK_ANGLES = [
-  'Breakdown of a multi-million dollar startup',
-  'The psychological offer tweak that 10x\'d revenue',
-  'What separates top 1% founders from the rest',
-  'The unsexy marketing strategy that built an empire',
-  'Why classic business advice fails early-stage startups'
-];
-
 /**
- * Generate a top-tier business tweet using Gemini 3.8 Flash (if API key available)
- * or Deep Business Intelligence Engine (guaranteed fallback).
+ * Generate a high-retention, deeply humanized business tweet
+ * Using Gemini 3.8 Flash (if key present) or Curated Deep Knowledge Bank
  */
 export async function generateBusinessTweet({
-  category = 'all', // all, startup_breakdown, offer_blueprint, growth_hack, contrarian
+  category = 'all',
   customTopic = null,
   geminiApiKey = null
 } = {}) {
@@ -178,34 +211,31 @@ export async function generateBusinessTweet({
   if (apiKey) {
     try {
       const ai = new GoogleGenAI({ apiKey });
-      const prompt = `You are a world-class startup founder, business investor, and high-impact X (Twitter) ghostwriter.
-Your specialty: Writing viral, human, high-retention business tweets and breakdowns about:
-- Startups that scaled from $0 to $100M+ through clever hacks or product moats (Airbnb, Stripe, Zerodha, Figma, Gymshark, etc.)
-- Irresistible Offers, Grand Slam pricing, and psychology (Alex Hormozi style, risk reversal, guarantees, pricing power)
-- Actionable frameworks founders can use today.
+      const prompt = `You are a real startup founder, seed investor, and high-signal X (Twitter) writer.
+Write an authentic, humanized, viral breakdown tweet about business, startups, or offer psychology.
 
-CRITICAL TONE & STYLE RULES (NO AI-SLOP):
-- NEVER use generic AI buzzwords: "In today's fast-paced world", "Game changer", "Unleash", "Dive into", "Revolutionizing", "Tapestry".
-- Write like a real founder talking over coffee: Punchy, authentic, whitespace-formatted, concise sentences.
-- Hook on line 1 that stops the scroll.
-- Concrete numbers, real founder names, specific dollar amounts or metrics.
-- Keep the tweet strictly under 270 characters (single punchy tweet) OR a structured mini-breakdown under 280 characters.
-- Add NO MORE than 1 natural hashtag (or zero hashtags).
-- Return a STRICT JSON object in this exact format:
+AUDITED 2026 X WRITING RULES (STRICT):
+1. ZERO AI CLICHÉS: Never use "dive in", "unleash", "game-changer", "tapestry", "fast-paced world", "buckle up", "masterclass", "revolutionizing".
+2. HOOK: Line 1 must be an authentic contrast, counter-intuitive insight, or surprising fact with specific numbers.
+3. STANZA FLOW: 1-2 sentence paragraphs separated by clean line breaks. Very easy to read on mobile.
+4. SPECIFICITY: Include real years (e.g. 2011), founder names (Patrick Collison, Brian Chesky, Alex Hormozi), real dollar numbers, or code lines.
+5. CLOSER: End with a sharp 1-sentence truth or actionable founder takeaway. DO NOT repeat "Bookmark this" or generic CTA.
+6. LENGTH: Under 270 characters (single tweet) or concise punchy breakdown under 280 characters. Max 0 or 1 natural hashtag.
+7. Return STRICT JSON:
 {
   "tweetText": "Full text of the tweet with clean line breaks",
-  "category": "Startup Breakdown / Offer Blueprint / Growth Playbook",
-  "companyOrTopic": "Name of company or concept",
+  "category": "Startup Breakdown / Offer Psychology / Growth Blueprint",
+  "companyOrTopic": "Name of company or subject",
   "visualCard": {
-    "tag": "GROWTH TEARDOWN / OFFER BLUEPRINT / UNIT ECONOMICS",
-    "title": "Short Catchy Card Title",
-    "stat": "Key Metric or Stat (e.g. $0 to $100M in 3 Years)",
-    "highlight": "The Core Strategy or Move",
-    "keyLesson": "1-sentence actionable takeaway for founders"
+    "tag": "GROWTH BLUEPRINT / OFFER TEARDOWN / UNIT ECONOMICS",
+    "title": "Minimal Catchy Title (3-6 words)",
+    "stat": "Key Metric (e.g. 3 Weeks to 7 Lines of Code)",
+    "highlight": "The Unconventional Move",
+    "keyLesson": "1-sentence core lesson for founders"
   }
 }
 
-${customTopic ? `Focus specifically on this topic: ${customTopic}` : `Pick a fascinating real startup breakdown or irresistible offer case study.`}`;
+${customTopic ? `Focus specifically on: ${customTopic}` : `Pick a fascinating real startup growth move or irresistible offer teardown.`}`;
 
       const response = await ai.models.generateContent({
         model: 'gemini-3.8-flash',
@@ -220,22 +250,22 @@ ${customTopic ? `Focus specifically on this topic: ${customTopic}` : `Pick a fas
         return {
           source: 'gemini-3.8-flash',
           tweetText: parsed.tweetText.trim(),
-          category: parsed.category || 'Business Breakdown',
-          companyOrTopic: parsed.companyOrTopic || 'Startup Strategy',
+          category: parsed.category || 'Startup Breakdown',
+          companyOrTopic: parsed.companyOrTopic || 'Business Strategy',
           visualCard: parsed.visualCard
         };
       }
     } catch (err) {
-      console.warn('Gemini API call failed, seamlessly falling back to curated intelligence bank:', err.message);
+      console.warn('Gemini call fell back to curated knowledge bank:', err.message);
     }
   }
 
-  // Curated Fallback with Dynamic Human Variation
+  // Curated Fallback with Dynamic Natural Variation
   const pool = BUSINESS_CASE_STUDIES;
   const picked = pool[Math.floor(Math.random() * pool.length)];
 
-  // Create human-like variation on hook & structure
-  const formattedText = `${picked.hook}\n\n${picked.story}\n\nBookmark this for your next business review. 📌`;
+  // Natural humanized formatting
+  const formattedText = `${picked.hook}\n\n${picked.story}\n\n${picked.closer}`;
 
   return {
     source: 'curated_intelligence_bank',

@@ -24,14 +24,15 @@ function escapeXml(unsafe = '') {
 }
 
 /**
- * Generate a modern, dark-mode sleek Business Breakdown Infographic Card (SVG)
+ * Generate a modern, minimal, LIGHT-MODE sleek Business Infographic Card (SVG)
+ * Editorial, high-end Swiss typography aesthetic (Stripe / Apple / Linear style)
  */
 export function generateCardSvg({
-  tag = 'BUSINESS CASE STUDY',
-  title = 'How They Built a $100M Empire',
+  tag = 'BUSINESS BREAKDOWN',
+  title = 'How They Scaled a $100M Machine',
   stat = '$0 to $100M in 3 Years',
-  highlight = 'Zero-Cost Organic Community Engine',
-  keyLesson = 'Remove friction and prioritize customer retention above all else.'
+  highlight = 'Zero-Cost Organic Distribution Flywheel',
+  keyLesson = 'Remove every point of friction before you spend money on marketing.'
 } = {}) {
   const safeTag = escapeXml(tag.toUpperCase());
   const safeTitle = escapeXml(title);
@@ -42,79 +43,58 @@ export function generateCardSvg({
   return `
 <svg width="1200" height="675" viewBox="0 0 1200 675" fill="none" xmlns="http://www.w3.org/2000/svg">
   <defs>
-    <!-- Background Gradient -->
-    <linearGradient id="bg" x1="0" y1="0" x2="1200" y2="675" gradientUnits="userSpaceOnUse">
-      <stop offset="0%" stop-color="#090D16" />
-      <stop offset="50%" stop-color="#0F172A" />
-      <stop offset="100%" stop-color="#030712" />
-    </linearGradient>
-
-    <!-- Card Accent Glow -->
-    <radialGradient id="glow" cx="600" cy="100" r="500" gradientUnits="userSpaceOnUse">
-      <stop offset="0%" stop-color="#38BDF8" stop-opacity="0.18" />
-      <stop offset="100%" stop-color="#6366F1" stop-opacity="0" />
-    </radialGradient>
-
-    <!-- Stat Pill Gradient -->
-    <linearGradient id="pillGrad" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0%" stop-color="#0284C7" />
-      <stop offset="100%" stop-color="#4F46E5" />
-    </linearGradient>
-
-    <!-- Text Highlight Gradient -->
-    <linearGradient id="textGrad" x1="0" y1="0" x2="1" y2="0">
-      <stop offset="0%" stop-color="#38BDF8" />
-      <stop offset="50%" stop-color="#818CF8" />
-      <stop offset="100%" stop-color="#C084FC" />
-    </linearGradient>
+    <!-- Subtle Ambient Backdrop Shadow -->
+    <filter id="cardShadow" x="24" y="24" width="1152" height="627" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+      <feDropShadow dx="0" dy="12" stdDeviation="20" flood-color="#0F172A" flood-opacity="0.06" />
+    </filter>
   </defs>
 
-  <!-- Background Canvas -->
-  <rect width="1200" height="675" fill="url(#bg)" />
-  <rect width="1200" height="675" fill="url(#glow)" />
+  <!-- Crisp Minimal Canvas Background (Warm Soft Neutral) -->
+  <rect width="1200" height="675" fill="#F8FAFC" />
 
-  <!-- Outer Glass Border -->
-  <rect x="36" y="36" width="1128" height="603" rx="32" fill="#0F172A" fill-opacity="0.6" stroke="#334155" stroke-width="2" />
+  <!-- Main Card Container (Pure Minimal White with Subtle Border) -->
+  <rect x="36" y="36" width="1128" height="603" rx="28" fill="#FFFFFF" stroke="#E2E8F0" stroke-width="1.5" filter="url(#cardShadow)" />
 
-  <!-- Grid Decoration Lines -->
-  <line x1="80" y1="130" x2="1120" y2="130" stroke="#1E293B" stroke-width="1.5" stroke-dasharray="6 6" />
-  <line x1="80" y1="520" x2="1120" y2="520" stroke="#1E293B" stroke-width="1.5" stroke-dasharray="6 6" />
+  <!-- Subtle Minimal Dividers -->
+  <line x1="76" y1="126" x2="1124" y2="126" stroke="#F1F5F9" stroke-width="1.5" />
+  <line x1="76" y1="520" x2="1124" y2="520" stroke="#F1F5F9" stroke-width="1.5" />
 
-  <!-- Top Pill / Category Tag -->
-  <rect x="80" y="72" width="260" height="36" rx="18" fill="#1E293B" stroke="#38BDF8" stroke-width="1.5" stroke-opacity="0.6" />
-  <circle cx="102" cy="90" r="5" fill="#38BDF8" />
-  <text x="118" y="95" fill="#38BDF8" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="13" font-weight="800" letter-spacing="1.5">${safeTag}</text>
+  <!-- Top Pill / Category Tag (Minimalist Slate Pill) -->
+  <rect x="76" y="68" width="250" height="36" rx="18" fill="#F1F5F9" stroke="#E2E8F0" stroke-width="1" />
+  <circle cx="96" cy="86" r="4.5" fill="#0F172A" />
+  <text x="110" y="91" fill="#1E293B" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="12" font-weight="800" letter-spacing="1.2">${safeTag}</text>
 
-  <!-- Branding Badge Top Right -->
-  <text x="1120" y="95" text-anchor="end" fill="#94A3B8" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="13" font-weight="700" letter-spacing="1">X AUTONOMOUS ENGINE ⚡</text>
+  <!-- Top Right Minimal Branding Tag -->
+  <text x="1124" y="91" text-anchor="end" fill="#94A3B8" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="12" font-weight="700" letter-spacing="1.5">FOUNDER BLUEPRINT ✦</text>
 
-  <!-- Title -->
-  <text x="80" y="210" fill="#F8FAFC" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="44" font-weight="900" letter-spacing="-0.5">
+  <!-- Title (Pitch Black, Ultra-Bold Swiss Typography) -->
+  <text x="76" y="196" fill="#0F172A" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="42" font-weight="900" letter-spacing="-0.8">
     ${safeTitle}
   </text>
 
-  <!-- Highlight Stat Card -->
-  <rect x="80" y="260" width="1040" height="110" rx="20" fill="#1E293B" fill-opacity="0.8" stroke="#475569" stroke-width="1.5" />
-  <text x="116" y="302" fill="#94A3B8" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="14" font-weight="700" letter-spacing="1.2">KEY IMPACT METRIC</text>
-  <text x="116" y="348" fill="url(#textGrad)" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="36" font-weight="900">
+  <!-- Stat Highlight Box (Minimal Crisp Light Card) -->
+  <rect x="76" y="244" width="1048" height="114" rx="18" fill="#F8FAFC" stroke="#E2E8F0" stroke-width="1.5" />
+  <text x="108" y="284" fill="#64748B" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="12" font-weight="800" letter-spacing="1.5">KEY GROWTH BENCHMARK</text>
+  <text x="108" y="334" fill="#0F172A" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="34" font-weight="900" letter-spacing="-0.5">
     ${safeStat}
   </text>
 
-  <!-- Core Strategy Highlight Box -->
-  <rect x="80" y="390" width="1040" height="96" rx="16" fill="#0284C7" fill-opacity="0.1" stroke="#38BDF8" stroke-width="1.5" stroke-opacity="0.3" />
-  <text x="116" y="425" fill="#38BDF8" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="13" font-weight="800" letter-spacing="1">THE UNCONVENTIONAL STRATEGY</text>
-  <text x="116" y="462" fill="#E2E8F0" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="22" font-weight="700">
+  <!-- Core Strategy Box (Subtle Refined Focus Box) -->
+  <rect x="76" y="380" width="1048" height="106" rx="18" fill="#F1F5F9" stroke="#CBD5E1" stroke-width="1" />
+  <text x="108" y="416" fill="#475569" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="12" font-weight="800" letter-spacing="1.2">THE UNCONVENTIONAL STRATEGY</text>
+  <text x="108" y="456" fill="#0F172A" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="22" font-weight="700">
     ${safeHighlight}
   </text>
 
-  <!-- Bottom Takeaway / Founder Lesson -->
-  <text x="80" y="565" fill="#64748B" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="12" font-weight="800" letter-spacing="1.5">KEY TAKEAWAY FOR FOUNDERS:</text>
-  <text x="80" y="600" fill="#F1F5F9" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="20" font-weight="600">
+  <!-- Bottom Takeaway / Founder Lesson (Clean Editorial Quote) -->
+  <text x="76" y="560" fill="#94A3B8" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="11" font-weight="800" letter-spacing="1.5">CORE LESSON FOR FOUNDERS:</text>
+  <text x="76" y="596" fill="#1E293B" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="20" font-weight="600">
     "${safeLesson}"
   </text>
 </svg>
 `;
 }
+
 
 /**
  * Render visual card to PNG file and return local path + embedded data URL + public URL
